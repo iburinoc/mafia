@@ -1,4 +1,12 @@
-var mafia = angular.module('mafia', []);
+mafia.config(['$routeProvider', function($routeProvider) {
+    $routeProvider
+    .when('/', {
+        templateUrl: 'views/main.html'
+    })
+    .otherwise({
+        redirectTo: '/'
+    });
+}]);
 
 mafia.controller('MainCtrl', ['$scope', function($scope) {
 	$scope.username = '';
