@@ -5,14 +5,15 @@
 		<title>My HTML File</title>
         <link rel="stylesheet" href="../lib/bootstrap.min.css" type="text/css">
         <link rel="stylesheet" href="mafia.css" type="text/css">
-		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0rc1/angular-route.min.js"></script>
         <script src="../lib/ui-bootstrap-tpls-0.10.0.js"></script>
-        <script src="server.js"></script>
-		<script src="MainCtrl.js"></script>
+		<script src="Cntrls.js"></script>
+        <script src="main.js"></script>
 	</head>
 	<body>
 		<div ng-controller="MainCtrl">
-			
+			<ng-view></ng-view>
 		</div>
 	</body>
 </html>

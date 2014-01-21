@@ -1,11 +1,12 @@
 <div>
-    <div id="newgame">
-        
-    </div>
-    <div id="joingame">
-        <input type="text" ng-model="username" ng-change="validate()" placeholder="Enter username" class="form-control">
-        <button id="Join">
-				
-        </button>
+    <div id="menu">
+        <h1>Welcome to teh Mafia...</h1>
+        <input type="text" ng-model="username" ng-change="validateUsername()" placeholder="Enter username" class="form-control margin">
+        <div id="new-game" class="margin">
+        </div>
+        <div id="join-game"> 
+            <input type="text" ng-model="gameID" ng-required="joinMouseOver" ng-minLength="8" ng-maxLength="8" ng-pattern="/^[0-9a-f]*$/" class="form-control margin">
+            <button id="join-game-btn" class="btn btn-default margin">Join Game</button>
+        </div>
     </div>
 </div>
