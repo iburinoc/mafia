@@ -20,10 +20,15 @@ div#new-game {
 form#join-game {
     width: 48%;
     float: right;
+	margin-top: 10px;
 }
 
 button#join-game-btn {
     float: right;
+}
+
+button#new-game-btn {
+	float: left;
 }
 
 .ng-invalid.ng-dirty {
