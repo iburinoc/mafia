@@ -1,4 +1,4 @@
-mafia.config(['$routeProvider', function($routeProvider) {
+/*mafia.config(['$routeProvider', function($routeProvider) {
     $routeProvider
     .when('/', {
         templateUrl: 'views/main.html'
@@ -7,7 +7,7 @@ mafia.config(['$routeProvider', function($routeProvider) {
         redirectTo: '/'
     });
 }]);
-
+*/
 mafia.controller('MainCtrl', ['$scope', function($scope) {
 	$scope.username = '';
 	$scope.validate = function () {
