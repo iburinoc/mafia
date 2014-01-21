@@ -2,9 +2,9 @@
     <div id="menu">
         <h1>Welcome to teh Mafia...</h1>
 		<form name="username">
-        	<input type="text" name="name" ng-model="username.name.uname" ng-pattern="/^[a-zA-Z0-9_]{5,20}$/" placeholder="Enter username" class="form-control margin" required>
+        	<input type="text" name="name" ng-model="username.name.uname" ng-pattern="/^[a-zA-Z0-9_]{5,20}$/" placeholder="Enter username" class="form-control" required>
         </form>
-        <div id="new-game" class="margin">
+        <div id="new-game">
 			<button id="new-game-btn" class="btn btn-primary" ng-disabled="username.name.$invalid || username.name.$pristine">New Game</button>
         </div>
         

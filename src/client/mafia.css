@@ -24,11 +24,13 @@ form#join-game {
 }
 
 button#join-game-btn {
-    float: right;
+    float: left;
+    margin-top: 5px;
 }
 
 button#new-game-btn {
-	float: left;
+	float: right;
+    margin-top: 49px;
 }
 
 .ng-invalid.ng-dirty {
