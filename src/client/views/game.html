@@ -1,4 +1,8 @@
 <div id="game" align="left">
     <h1 id="time">It is currently {{day?"day":"night"}} time.</h1>
-    
+    <div>
+        <button ng-repeat="player in others" type="button" class="btn btn-primary person-button" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0" ng-disabled="!player.alive;">
+            {{ player.name }}
+        </button>
+    </div>
 </div>

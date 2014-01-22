@@ -26,7 +26,7 @@ mafia.factory('socket', function ($rootScope) {
 });
 
 mafia.service('gameData', ['$http', '$location', function($http, $location) {
-    var data = {you: {}, others: []};
+    var data = {you: {}, others: [{name: "bill", alive: true}, {name: "jill", alive: false}, {name: "jillawdiawdioawnfiawdddawd", alive: true}]};
     
     return {
         reload: function() {
@@ -36,7 +36,7 @@ mafia.service('gameData', ['$http', '$location', function($http, $location) {
             $http.post('/game/join', {name: username, id: gameid})
             .success(function(data, status, headers, config) {
                 console.log(status);
-                data = 
+               //data = 
             })
             .error(function(data, status, headers, config) {
                 console.log(status);

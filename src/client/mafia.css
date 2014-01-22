@@ -48,3 +48,9 @@ div#game {
     margin-left: 100px;
     margin-right: 100px;
 }
+
+button.person-button {
+    margin-right: 2px;
+    margin-left: 2px;
+    min-width: 50px;
+}
