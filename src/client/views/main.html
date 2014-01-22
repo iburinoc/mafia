@@ -5,7 +5,7 @@
         	<input type="text" name="name" ng-model="username.name.uname" ng-pattern="/^[a-zA-Z0-9_]{5,20}$/" placeholder="Enter username" class="form-control" required>
         </form>
         <div id="new-game">
-			<button id="new-game-btn" class="btn btn-primary" ng-disabled="username.name.$invalid || username.name.$pristine">New Game</button>
+			<button id="new-game-btn" class="btn btn-primary" ng-disabled="username.name.$invalid || username.name.$pristine" ng-click="newGame()">New Game</button>
         </div>
         
         <form id="join-game" name="joinGame"> 

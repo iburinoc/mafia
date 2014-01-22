@@ -37,7 +37,23 @@ button#new-game-btn {
   border-color: red;
   outline-color: red;
 }
+
 .ng-valid.ng-dirty {
   border-color: green;
   outline-color: green;
+}
+
+#load-content {
+    height:240px;
+    width: 400px;
+    top: 50%;
+    margin-top: -120px;
+    margin: 0 auto;
+    background-color: #888;
+}
+
+div#game {
+    height: 100%;
+    margin-left: 100px;
+    margin-right: 100px;
 }
