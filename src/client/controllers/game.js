@@ -3,5 +3,7 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
     $scope.notDead = function(item) {
         return item.alive;
     }
-    $scope.others = gameData.others();
+    $scope.you = gameData.you();
+    $scope.players = gameData.players();
+    $scope.hasAction = true;
 }]);

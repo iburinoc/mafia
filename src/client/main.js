@@ -25,8 +25,9 @@ mafia.factory('socket', function ($rootScope) {
   };
 });
 
-mafia.service('gameData', ['$http', '$location', function($http, $location) {
-    var data = {you: {}, others: [{name: "bill", alive: true}, {name: "jill", alive: false}, {name: "jillawdiawdioawnfiawdddawd", alive: true}]};
+mafia.service('gameData', ['$http', '$location', 'roles', function($http, $location, roles) {
+    var data = {you: {name: "ibur", alive: true, role: roles["mafia"]}, others: [{name: "bill", alive: true}, {name: "jill", alive: false}, {name: "jillawdiawdioawnfiawdddawd", alive: true}]};
+    data.others.push(data.you);
     
     return {
         reload: function() {
@@ -60,11 +61,28 @@ mafia.service('gameData', ['$http', '$location', function($http, $location) {
                 }
             });
         },
-        player: function() {
+        you: function() {
             return data.you;
         }, 
-        others: function() {
+        players: function() {
             return data.others;
         }
     };
 }]);
+
+mafia.factory('roles', function() {
+    return {
+        "mafia": {
+            name: "Mafia",
+            nightActivity: true,
+            action: "Choose someone to kill",
+            plural: true
+        },
+        "civilian": {
+            name: "Civilian",
+            nightActivity: false,
+            action: null,
+            plural: true
+        }
+    };
+});

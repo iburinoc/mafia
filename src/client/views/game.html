@@ -1,8 +1,11 @@
 <div id="game" align="left">
     <h1 id="time">It is currently {{day?"day":"night"}} time.</h1>
     <div>
-        <button ng-repeat="player in others" type="button" class="btn btn-primary person-button" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0" ng-disabled="!player.alive;">
-            {{ player.name }}
-        </button>
+        <div ng-show="hasAction">
+            <h3 id="action">{{ you.role.action }}</h3>
+            <button ng-repeat="o in players" type="button" class="btn btn-primary person-button" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0" ng-disabled="!o.alive;">
+                {{ o.name }}
+            </button>
+        </div>
     </div>
 </div>
