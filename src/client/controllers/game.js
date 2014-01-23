@@ -5,5 +5,5 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
     }
     $scope.you = gameData.you();
     $scope.players = gameData.players();
-    $scope.hasAction = true;
+    $scope.hasAction = $scope.you.role.nightActivity && $scope.you.alive;
 }]);
