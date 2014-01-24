@@ -83,6 +83,11 @@ mafia.factory('roles', function() {
             nightActivity: false,
             action: null,
             plural: true
-        }
+		},
+		setRoles: function(roles) {
+			for(r in roles) {
+				this[r.name] = r;
+			}
+		}
     };
 });
