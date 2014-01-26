@@ -35,6 +35,10 @@ mafia.config(['$routeProvider', function($routeProvider) {
         templateUrl: 'client/views/game.html',
         controller: 'GameCtrl'
     })
+	.when('/setup/', {
+		templateUrl: 'client/views/setup.html',
+		controller: 'GameCtrl'
+	})
     .otherwise({
         redirectTo: '/'
     });

@@ -43,7 +43,7 @@ button#new-game-btn {
   outline-color: green;
 }
 
-div#game {
+div.game-div {
     height: 100%;
     margin-left: 100px;
     margin-right: 100px;

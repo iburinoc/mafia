@@ -2,6 +2,8 @@ var maxGames = 0xffffffff;
 
 var games = {};
 
+Math.random();
+
 function initSocket(socket) {
 	
 	var id = "0";
@@ -36,7 +38,7 @@ function initSocket(socket) {
 		id = newGame(data.name, socket);
 		name = data.name;
 		socket.emit('success', {});
-		socket.emit('gameData', games[id].getSendData());
+		socket.emit('gameData', games[id].getSendData(name));
 		leader = true;
 	});
 	
@@ -46,7 +48,7 @@ function initSocket(socket) {
 			if(player !== null) {
 				if(player.disconnected) {
 					player.disconnected = undefined;
-					socket.emit('gameData', games[data.id].getSendData());
+					socket.emit('gameData', games[data.id].getSendData(name));
 					leader = false;
 				} else {
 					socket.emit('nameexists', {});
@@ -57,7 +59,7 @@ function initSocket(socket) {
 					id = data.id;
 					name = data.name;
 					socket.emit('success', {});
-					socket.emit('gameData', games[data.id].getSendData());
+					socket.emit('gameData', games[data.id].getSendData(name));
 					leader = false;
 				} else {
 					socket.emit('inprogress', {});
@@ -120,13 +122,14 @@ function Game(leaderName, socket, id) {
 	this.id = id;
 	
 	var leader = new Player(leaderName, socket);
+	leader.leader = true;
 	this.players = [leader];
 	
 	this.setup = true;
 	
 	this.day = false;
 	
-	this.roles = copyRoles();
+	this.roles = copyObj(roles);
 	
 	this.getLeader = function() {
 		return this.players[0];
@@ -140,12 +143,19 @@ function Game(leaderName, socket, id) {
 	
 	this.getSendData = function(name) {
 		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles};
+		var pobj = null;
 		data.players = [];
-		for(p in game.players) {
+		for(var i = 0; i < game.players.length; i++) {
+			var p = game.players[i];
+			pobj = {name: p.name, alive: p.alive, leader: p.leader};
 			if(p.name === name) {
-				data.players.push(p);
+				pobj.role = p.role;
+				console.log(p);
+				console.log(pobj);
+				data.players.push(pobj);
 			} else {
-				var pobj = {name: p.name, alive: p.alive};
+				console.log(p);
+				console.log(pobj);
 				if(!p.alive) {
 					pobj.role = p.role;
 				}
@@ -154,14 +164,8 @@ function Game(leaderName, socket, id) {
 		}
 		return data;
 	}
-}
-
-function copyRoles() {
-	r = [];
-	for(role in roles) {
-		r.push(copyObj(role));
-	}
-	return r;
+	console.log('new game');
+	console.log(this);
 }
 
 function copyObj(o) {

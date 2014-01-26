@@ -1,9 +1,9 @@
-<div id="game" align="left">
+<div id="game" align="left" ng-show="!data.setup">
     <h1 id="time">It is currently {{day?"day":"night"}} time.</h1>
     <div>
-        <div ng-show="hasAction">
-            <h3 id="action">{{ you.role.action }}</h3>
-            <button ng-repeat="o in players" type="button" class="btn btn-primary person-button" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0" ng-disabled="!o.alive;">
+        <div ng-show="hasAction()">
+            <h3 id="action">{{ data.you.role.action }}</h3>
+            <button ng-repeat="o in data.players" type="button" class="btn btn-primary person-button" ng-disabled="!o.alive;">
                 {{ o.name }}
             </button>
         </div>

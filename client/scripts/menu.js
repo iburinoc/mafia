@@ -20,10 +20,6 @@ mafia.controller('MainCtrl', ['$scope', '$location', '$modal', 'gameData', funct
 		}
 		modalInstance.result.then(closed, closed);
 	}
-	
-	function gameRedirect() {
-		
-	}
 
 	function successNew() {
 		console.log('New game created');
