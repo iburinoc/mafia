@@ -2,10 +2,12 @@ var http = require('http'),
 	url = require('url'),
 	cache = require('cachemere'),
 	fs = require('fs'),
-	io = require('socket.io'),
-	game = require('./game');
+	server = http.createServer(handler),
+	io = require('socket.io').listen(server),
+	game = require('./game'),
+	index = fs.readFileSync('index.html');
 
-var index = fs.readFileSync('index.html');
+server.listen(3006);
 
 var mimeTypes = {
     "html": "text/html",
@@ -15,7 +17,7 @@ var mimeTypes = {
     "js": "text/javascript",
     "css": "text/css"};
 
-var server = http.createServer(function(req, res) {
+function handler(req, res) {
 	console.log(req.method + ":" + req.url);
 	uri = url.parse(req.url).pathname;
 	console.log(uri);
@@ -46,9 +48,9 @@ var server = http.createServer(function(req, res) {
 		res.write('404 not found');
 		res.end();
 	}
+}
+
+io.sockets.on('connection', function(socket) {
+	game.initSocket(socket);
+	console.log('socket connected');
 });
-server.listen(3006);
-
-io = io.listen(server);
-
-game.injectIO(io);

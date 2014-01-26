@@ -15,4 +15,15 @@
             <button id="join-game-btn" class="btn btn-default" ng-disabled="joinGame.gameID.$invalid || joinGame.gameID.$pristine || username.name.$invalid || username.name.$pristine" ng-click="joinGameFn();">Join Game</button>
         </form>
     </div>
+	<script type="text/ng-template" id="connectFailed.html">
+		<div class="modal-header">
+            <h3>Connection failed :(</h3>
+        </div>
+        <div class="modal-body">
+            {{ modalMessage }}
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-warning" ng-click="closeModal()">Close</button>
+        </div>	
+	</script>
 </div>
