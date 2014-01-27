@@ -126,7 +126,5 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 	
 	$scope.updateRoles = function() {
 		gameData.updateRoles($scope.roleNums.$valid);
-		console.log(roleNums);
-		console.log(roleNums.$valid);
 	};
 }]);
