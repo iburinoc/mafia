@@ -1,12 +1,20 @@
 <div id="setup" align="left" ng-show="data.setup" class="game-div">
 	<h1>Setup mode</h1>
+	<h3>Game ID: {{ data.id }}</h3>
 	<div id="leaderthings" ng-show="data.you.leader">
 		<h3>You are the leader! :D</h3>
-		<button id="start" ng-disabled="data.players.length===1" class="btn btn-primary" ng-click="start()">Start!</button>
+		<button id="start" ng-disabled="data.players.length===1 || roleNums.$invalid" class="btn btn-primary" ng-click="start()">Start!</button>
 	</div>
 	<form name="roleNums">
 		<span id="rolecount" style="float: left" ng-repeat="role in data.roles">
 			{{ role.name }}: <input type="number" min="{{ roleMin(role) }}" max="{{ roleMax(role) }}" required ng-model="role.number" ng-readonly="!data.you.leader || role.name==='Civilian'" ng-change="updateRoles()">
 		</span>
+		<br>
 	</form>
+	<div>
+		<h3>Players:</h3>
+		<ul>
+			<li ng-repeat="player in data.players">{{ player.name }}</li>
+		</ul>
+	</div>
 </div>
