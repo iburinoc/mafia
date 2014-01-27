@@ -38,6 +38,7 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 	
 	return {
 		connect: function(username, id, success, error) {
+			name = username;
 			socket.on('inprogress', function(data) {
 				error('The game is already in progress');
 			});
@@ -48,15 +49,14 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 				error('We could not find the game you are looking for');
 			});
 			socket.on('success', function(data) {
-				name = username;
 				success();
 			});
 			socket.emit('connect', {name: username, id: id});
 		},
 		newGame: function(username, success) {
+			name = username;
 			socket.emit('newgame', {name: username});
 			socket.on('success', function(data) {
-				name = username;
 				success();
 			});
 		},
@@ -64,7 +64,7 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 			return data;
 		},
 		reload: function() {
-			socket.emit('reload', {});
+			socket.emit('reload');
 		},
 		callbacks: function() {
 			return callbacks;
@@ -90,7 +90,10 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 			}
 		},
 		disconnect: function() {
-			socket.emit('dc',{});
+			socket.emit('dc');
+		},
+		start: function() {
+			socket.emit('start');
 		}
 	};
 }]);
@@ -101,6 +104,8 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 	gameData.callbacks().push(function(data) {
 		$scope.data = data;
 	});
+	
+	$scope.start = gameData.start();
 	
 	$scope.roleMin = function(role) {
 		return role.name === 'Mafia'? 1 : 0;

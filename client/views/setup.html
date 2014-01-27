@@ -2,6 +2,7 @@
 	<h1>Setup mode</h1>
 	<div id="leaderthings" ng-show="data.you.leader">
 		<h3>You are the leader! :D</h3>
+		<button id="start" ng-disabled="data.players.length===1" class="btn btn-primary" ng-click="start()">Start!</button>
 	</div>
 	<form name="roleNums">
 		<span id="rolecount" style="float: left" ng-repeat="role in data.roles">
