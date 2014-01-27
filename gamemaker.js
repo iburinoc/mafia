@@ -6,7 +6,7 @@ var deadGames = [];
 
 function cleanDead() {
 	for(var i = 0; i < deadGames.length; i++) {
-		try{
+		try {
 			if(!games[id].dead()) {
 				deadGames.splice(i);
 			} else {
@@ -17,7 +17,7 @@ function cleanDead() {
 					games[id].deadChecked = true;
 				}
 			}
-		}
+		} catch(err) { console.log(err); }
 	}
 }
 
@@ -43,7 +43,7 @@ function initSocket(socket) {
 		try{
 			if(!leader) return;
 			games[id].start();
-		}
+		} catch(err) { console.log(err); }
 	});
 
 	socket.on('personClickNight', function(data) {
