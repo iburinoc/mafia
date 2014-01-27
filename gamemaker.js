@@ -224,7 +224,23 @@ function Game(leaderName, socket, id) {
 			return;
 		}
 		
+		for(var i = 0; i < game.roles.length; i++) {
+			for(var j = 0; j < game.roles[i].number; j++) {
+				var k;
+				do {
+					k = Math.floor(Math.random() * game.players.length);
+				} while(game.players[k].role != undefined);
+				game.players[k].role = game.roles[i];
+			}
+		}
+		game.setup = false;
+		game.day = false;
 		
+		game.update();
+		
+		for(var i = 0; i < game.players.length; i++) {
+			game.players[i].socket.emit('start');
+		}
 	};
 	
 	this.validateRoles = function() {

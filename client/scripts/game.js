@@ -21,20 +21,21 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 		}
 	}
 	callbacks.push(chooseLoc);
+
+	socket.on('gameData', function(g) {
+		console.log('data!');
+		data = g;
+		data.you = getYou();
+		data.civilian = data.roles[0];
+		console.log(g);
+		for(var i = 0; i < callbacks.length; i++) {
+			callbacks[i](g);
+		}
+	});
 	
-	function connect() {
-		socket.on('gameData', function(g) {
-			console.log('data!');
-			data = g;
-			data.you = getYou();
-			data.civilian = data.roles[0];
-			console.log(g);
-			for(var i = 0; i < callbacks.length; i++) {
-				callbacks[i](g);
-			}
-		});
-	}
-	connect();
+	socket.on('start', function() {
+		$location.path('/game/');
+	});
 	
 	return {
 		connect: function(username, id, success, error) {
