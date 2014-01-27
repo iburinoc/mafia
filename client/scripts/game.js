@@ -1,17 +1,7 @@
 mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $location, socket) {
-//    var data = {you: {name: "ibur", alive: true, role: roles["mafia"]}, others: [{name: "bill", alive: true}, {name: "jill", alive: false}, {name: "jillawdiawdioawnfiawdddawd", alive: true}]};
 	var data = null;
 	var callbacks = [];
 	var name;
-	socket.on('gameData', function(g) {
-		console.log('data!');
-		data = g;
-		data.you = getYou();
-		console.log(g);
-		for(var i = 0; i < callbacks.length; i++) {
-			callbacks[i](g);
-		}
-	});
 	
 	function getYou() {
 		for(var i = 0; i < data.players.length; i++) {
@@ -31,6 +21,20 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 		}
 	}
 	callbacks.push(chooseLoc);
+	
+	function connect() {
+		socket.on('gameData', function(g) {
+			console.log('data!');
+			data = g;
+			data.you = getYou();
+			data.civilian = data.roles[0];
+			console.log(g);
+			for(var i = 0; i < callbacks.length; i++) {
+				callbacks[i](g);
+			}
+		});
+	}
+	connect();
 	
 	return {
 		connect: function(username, id, success, error) {
@@ -68,7 +72,24 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 		setName: function(n) {
 			name = n;
 		},
-		getYou: getYou
+		getYou: getYou,
+		updateRoles: function() {
+			console.log('roles changed');
+			var n = 0;
+			var civ;
+			for(var i = 0; i < data.roles.length; i++) {
+				var role = data.roles[i];
+				if(role.name !== "Civilian") {
+					n += role.number;
+				}
+				console.log(role.name + ":" + role.number);
+			}
+			data.civilian.number = data.players.length - n;
+			socket.emit('roles', data.roles);
+		},
+		disconnect: function() {
+			socket.emit('dc',{});
+		}
 	};
 }]);
 
@@ -79,9 +100,20 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 		$scope.data = data;
 	});
 	
+	$scope.roleMin = function(role) {
+		return role.name === 'Mafia'? 1 : 0;
+	};
+	
+	$scope.roleMax = function(role) {
+		if(role.name !== "Civilian" && !isNaN($scope.data.civilian.number))
+			return role.number + $scope.data.civilian.number;
+		else
+			return $scope.data.players.length;
+	};
+	
     $scope.notDead = function(item) {
         return item.alive;
-    }
+    };
 	
     $scope.hasAction = function() {
 		if($scope.data != null)
@@ -89,4 +121,6 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 		else
 			return false;
 	};
+	
+	$scope.updateRoles = gameData.updateRoles;
 }]);

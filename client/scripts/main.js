@@ -13,6 +13,8 @@ mafia.factory('socket', function ($rootScope) {
 			});
 		},
 		emit: function (eventName, data, callback) {
+			console.log('emitted:');
+			console.log(data);
 			socket.emit(eventName, data, function () {
 				var args = arguments;
 				$rootScope.$apply(function () {

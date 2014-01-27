@@ -38,28 +38,26 @@ function initSocket(socket) {
 		id = newGame(data.name, socket);
 		name = data.name;
 		socket.emit('success', {});
-		socket.emit('gameData', games[id].getSendData(name));
 		leader = true;
 	});
 	
 	socket.on('connect', function(data) {
 		if(games[data.id] !== undefined) {
-			var player = findPlayer(games[data.id], data.name);
-			if(player !== null) {
+			var player = games[data.id].players[games[data.id].findPlayer(data.name)];
+			if(player !== undefined) {
 				if(player.disconnected) {
 					player.disconnected = undefined;
 					socket.emit('gameData', games[data.id].getSendData(name));
-					leader = false;
+					leader = !!player.leader;
 				} else {
 					socket.emit('nameexists', {});
 				}
 			} else {
 				if(games[data.id].setup) {
-					games[data.id].players.push(new Player(data.name, socket));
+					games[data.id].addPlayer(new Player(data.name, socket));
 					id = data.id;
 					name = data.name;
 					socket.emit('success', {});
-					socket.emit('gameData', games[data.id].getSendData(name));
 					leader = false;
 				} else {
 					socket.emit('inprogress', {});
@@ -70,44 +68,35 @@ function initSocket(socket) {
 		}
 	});
 	
-	socket.on('disconnect', function() {
+	function dc() {
 		if(games[id] !== undefined) {
 			if(games[id].setup) {
-				games[id].players.splice(findPlayerIndex(games[id], name));
+				games[id].players.splice(games[id].findPlayer(name));
+				games[id].update();
 			} else {
 				findPlayer(games[id], name).disconnected = true;
 			}
 		} else {
 			console.log('wat dced from non-existant game');
 		}
-	});
-}
-
-function findPlayer(game, name) {
-	return game.players[findPlayerIndex(game, name)];
-}
-
-function findPlayerIndex(game, name) {
-	for(var i = 0; i < game.players.legnth; i++) {
-		if(game.players[i].name === name) {
-			return i;
-		}
 	}
-	return -1;
+	
+	socket.on('disconnect', dc);
+	
+	socket.on('dc', dc);
 }
 
 var roles = [{
-	name: "Mafia",
-	nightActivity: true,
-	action: "Choose someone to kill",
-	number: 0,
-	consensus: true
-},
-{
 	name: "Civilian",
 	nightActivity: false,
 	action: null,
 	number: 0,
+	consensus: true
+},{
+	name: "Mafia",
+	nightActivity: true,
+	action: "Choose someone to kill",
+	number: 1,
 	consensus: true
 }];
 
@@ -136,10 +125,42 @@ function Game(leaderName, socket, id) {
 	}
 	
 	this.update = function() {
-		for(player in this.players) {
-			player.socket.emit('update', this.getSendData(player.name));
+		game.updateRoles();
+		for(var i = 0; i < game.players.length; i++) {
+			game.players[i].socket.emit('gameData', this.getSendData(game.players[i].name));
 		}
+		console.log(game);
 	}
+	
+	this.addPlayer = function(p) {
+		game.players.push(p);
+		game.update();
+	}
+	
+	this.updateRoles = function() {
+		var n = 0;
+		var civ;
+		for(var i = 0; i < game.roles.length; i++) {
+			var role = game.roles[i];
+			if(role.name !== "Civilian") {
+				n += role.number;
+			} else {
+				civ = role;
+			}
+			console.log(role.name + ":" + role.number);
+		}
+		civ.number = game.players.length - n;
+		console.log(civ.name + ":" + civ.number);
+	}
+	
+	this.findPlayer = function(name) {
+		for(var i = 0; i < game.players.length; i++) {
+			if(game.players[i].name === name) {
+				return i;
+			}
+		}
+		return -1;
+	};
 	
 	this.getSendData = function(name) {
 		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles};
@@ -185,7 +206,7 @@ function newGame(leaderName, socket) {
 	}
 	id = pad(id);
 	games[id] = new Game(leaderName, socket, id);
-	
+	games[id].update();
 	return id;
 }
 
