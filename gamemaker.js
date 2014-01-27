@@ -2,16 +2,34 @@ var maxGames = 0xffffffff;
 
 var games = {};
 
+var deadGames = [];
+
+function cleanDead() {
+	for(var i = 0; i < deadGames.length; i++) {
+		try{
+			if(!games[id].dead()) {
+				deadGames.splice(i);
+			} else {
+				if(games[id].deadChecked) {
+					deadGames.splice(i);
+					games[i] = undefined;
+				} else {
+					games[id].deadChecked = true;
+				}
+			}
+		}
+	}
+}
+
 function initSocket(socket) {
-	
 	var id = "0";
 	var name;
 	var leader;
 
 	socket.on('roles', function(data) {
 		try{
-			console.log('roles' + data);
 			if(!leader) return;
+			console.log('roles' + data);
 			for(var i = 0; i < data.length; i++) {
 				games[id].roles[i].number = data[i].number;
 			}
@@ -20,7 +38,10 @@ function initSocket(socket) {
 	});
 	
 	socket.on('start', function(data) {
-		
+		try{
+			if(!leader) return;
+			games[id].start();
+		}
 	});
 
 	socket.on('personClickNight', function(data) {
@@ -69,9 +90,19 @@ function initSocket(socket) {
 		if(games[id] !== undefined) {
 			if(games[id].setup) {
 				games[id].players.splice(games[id].findPlayer(name));
-				games[id].update();
+				if(games[id].players.length === 0) {
+					games[id] = undefined;
+				} else {
+					if(leader) {
+						games[id].players[Math.floor(Math.random() * games[id].players.length)].leader = true;
+					}
+					games[id].update();
+				}
 			} else {
-				findPlayer(games[id], name).disconnected = true;
+				games[id].players[games[id].findPlayer(name)].disconnected = true;
+				if(games[id].dead()) {
+					deadGames.push(id);
+				}
 			}
 		} else {
 			console.log('wat dced from non-existant game');
@@ -184,7 +215,33 @@ function Game(leaderName, socket, id) {
 			}
 		}
 		return data;
-	}
+	};
+	
+	this.start = function() {
+		if(!game.validateRoles()) {
+			return;
+		}
+		
+		
+	};
+	
+	this.validateRoles = function() {
+		var count = 0;
+		for(var i = 0; i < game.roles.length; i++) {
+			count += game.roles[i].number;
+		}
+		return count === game.players.length;
+	};
+	
+	this.dead = function() {
+		for(var i = 0; i < game.players.length; i++){ 
+			if(!game.players.disconnected) {
+				return false;
+			}
+		}
+		return true;
+	};
+	
 	console.log('new game');
 	console.log(this);
 }

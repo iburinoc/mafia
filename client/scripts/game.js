@@ -100,12 +100,19 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 
 mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', function($scope, $location, $http, gameData) {
     $scope.data = gameData.getData();
+	if($scope.data == null) {
+		$location.path('/');
+	}
 
 	gameData.callbacks().push(function(data) {
 		$scope.data = data;
 	});
 	
-	$scope.start = gameData.start();
+	$scope.start = function() {
+		if(roleNums.$valid) {
+			gameData.start();
+		}
+	}
 	
 	$scope.roleMin = function(role) {
 		return role.name === 'Mafia'? 1 : 0;
