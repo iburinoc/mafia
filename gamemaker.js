@@ -2,8 +2,6 @@ var maxGames = 0xffffffff;
 
 var games = {};
 
-Math.random();
-
 function initSocket(socket) {
 	
 	var id = "0";
@@ -202,10 +200,11 @@ function pad(num) {
 }
 
 function newGame(leaderName, socket) {
-	var id = 0;
-	while(games[pad(id)] !== undefined) {
+	var id;
+	do {
 		id = Math.floor(Math.random() * maxGames);
 	}
+	while(games[pad(id)] !== undefined);
 	id = pad(id);
 	games[id] = new Game(leaderName, socket, id);
 	games[id].update();
