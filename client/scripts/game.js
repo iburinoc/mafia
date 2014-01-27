@@ -73,7 +73,7 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 			name = n;
 		},
 		getYou: getYou,
-		updateRoles: function() {
+		updateRoles: function(send) {
 			console.log('roles changed');
 			var n = 0;
 			var civ;
@@ -85,7 +85,9 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 				console.log(role.name + ":" + role.number);
 			}
 			data.civilian.number = data.players.length - n;
-			socket.emit('roles', data.roles);
+			if(send) {
+				socket.emit('roles', data.roles);
+			}
 		},
 		disconnect: function() {
 			socket.emit('dc',{});
@@ -122,5 +124,9 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 			return false;
 	};
 	
-	$scope.updateRoles = gameData.updateRoles;
+	$scope.updateRoles = function() {
+		gameData.updateRoles($scope.roleNums.$valid);
+		console.log(roleNums);
+		console.log(roleNums.$valid);
+	};
 }]);

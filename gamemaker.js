@@ -10,29 +10,28 @@ function initSocket(socket) {
 	var name;
 	var leader;
 
-	function finishSetup(socket) {
-		if(leader) {
-			socket.on('changeroles', function(data) {
-				for(var i = 0; i < data.length; i++) {
-					games[id].roles[i].number = data[i].number;
-				}
-				games[id].update();
-			});
-			socket.on('start', function(data) {
-				
-			});
-		}
+	socket.on('roles', function(data) {
+		try{
+			console.log('roles' + data);
+			if(!leader) return;
+			for(var i = 0; i < data.length; i++) {
+				games[id].roles[i].number = data[i].number;
+			}
+			games[id].update();
+		} catch(err) { console.log(err) }
+	});
+	
+	socket.on('start', function(data) {
 		
-		socket.on('personClickNight', function(data) {
+	});
+
+	socket.on('personClickNight', function(data) {
+	
+	});
+	
+	socket.on('nominate', function(data) {
 		
-		});
-		
-		socket.on('nominate', function(data) {
-			
-		});
-		
-		
-	}
+	});
 	
 	socket.on('newgame', function(data) {
 		id = newGame(data.name, socket);
@@ -79,6 +78,9 @@ function initSocket(socket) {
 		} else {
 			console.log('wat dced from non-existant game');
 		}
+		name = '';
+		id = '';
+		leader = false;
 	}
 	
 	socket.on('disconnect', dc);

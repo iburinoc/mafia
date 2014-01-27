@@ -3,7 +3,9 @@
 	<div id="leaderthings" ng-show="data.you.leader">
 		<h3>You are the leader! :D</h3>
 	</div>
-	<span id="rolecount" style="float: left" ng-repeat="role in data.roles">
-		{{ role.name }}: <input type="number" min="{{ roleMin(role) }}" max="{{ roleMax(role) }}" required ng-model="role.number" ng-readonly="!data.you.leader || role.name==='Civilian'" ng-change="updateRoles()">
-	</span>
+	<form name="roleNums">
+		<span id="rolecount" style="float: left" ng-repeat="role in data.roles">
+			{{ role.name }}: <input type="number" min="{{ roleMin(role) }}" max="{{ roleMax(role) }}" required ng-model="role.number" ng-readonly="!data.you.leader || role.name==='Civilian'" ng-change="updateRoles()">
+		</span>
+	</form>
 </div>
