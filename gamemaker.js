@@ -21,6 +21,8 @@ function cleanDead() {
 	}
 }
 
+setInterval(cleanDead, 60000);
+
 function initSocket(socket) {
 	var id = "0";
 	var name;
