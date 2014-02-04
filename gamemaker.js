@@ -208,15 +208,14 @@ function Game(leaderName, socket, id) {
 				pobj.role = p.role;
 				console.log(p);
 				console.log(pobj);
-				data.players.push(pobj);
 			} else {
 				console.log(p);
 				console.log(pobj);
 				if(!p.alive) {
 					pobj.role = p.role;
 				}
-				data.players.push(pobj);
 			}
+			data.players.push(pobj);
 		}
 		return data;
 	};
