@@ -95,6 +95,7 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 		},
 		start: function() {
 			socket.emit('start');
+            console.log('starting');
 		}
 	};
 }]);
@@ -110,7 +111,7 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 	});
 	
 	$scope.start = function() {
-		if(roleNums.$valid) {
+		if($scope.roleNums.$valid) {
 			gameData.start();
 		}
 	}

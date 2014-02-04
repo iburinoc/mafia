@@ -7,18 +7,20 @@ var deadGames = [];
 function cleanDead() {
 	for(var i = 0; i < deadGames.length; i++) {
 		try {
-			if(!games[id].dead()) {
+			if(!(games[id].dead())) {
 				deadGames.splice(i);
 			} else {
 				if(games[id].deadChecked) {
 					deadGames.splice(i);
-					games[i] = undefined;
+					delete games[i];
 				} else {
 					games[id].deadChecked = true;
 				}
 			}
 		} catch(err) { console.log(err); }
 	}
+    console.log(games);
+    console.log(deadGames);
 }
 
 setInterval(cleanDead, 60000);
