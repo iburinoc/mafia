@@ -6,6 +6,7 @@ var deadGames = [];
 
 function cleanDead() {
 	for(var i = 0; i < deadGames.length; i++) {
+		var id = deadGames[i]
 		try {
 			if(!(games[id].dead())) {
 				deadGames.splice(i);
@@ -19,7 +20,14 @@ function cleanDead() {
 			}
 		} catch(err) { console.log(err); }
 	}
-    console.log(games);
+	for(i in games) {
+		if(games[i].dead()) {
+			deadGames.push(i);
+		}
+	}
+	for(i in games) {
+		console.log(games[i]);
+	}
     console.log(deadGames);
 }
 
@@ -49,7 +57,9 @@ function initSocket(socket) {
 	});
 
 	socket.on('personClickNight', function(data) {
-	
+		if(!games[id].players[games[id].findPlayer(name)].picked) {
+			games[id].nightClick(data);
+		}
 	});
 	
 	socket.on('nominate', function(data) {
@@ -189,6 +199,26 @@ function Game(leaderName, socket, id) {
 		console.log(civ.name + ":" + civ.number);
 	}
 	
+	this.nightClick = function(name, clickee) {
+		var num = game.findPlayer(name);
+		if(!game.players[num].picked) {
+			game.players[num].selection = clickee;
+			var updatees = [];
+			if(game.players[num].role.consensus) {
+				for(var p in game.players) {
+					if(game.players[p].role === game.players[num].role) {
+						updatees.append(game.players[p]);
+					}
+				}
+			} else {
+				updatees.append(game.players[num]);
+			}
+			for(var u in updatees) {
+				updatees.socket.emit('data', game.getSendData(u.name));
+			}
+		}
+	}
+
 	this.findPlayer = function(name) {
 		for(var i = 0; i < game.players.length; i++) {
 			if(game.players[i].name === name) {
@@ -201,10 +231,15 @@ function Game(leaderName, socket, id) {
 	this.getSendData = function(name) {
 		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles};
 		var pobj = null;
+		var index = game.findPlayer(name);
 		data.players = [];
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
 			pobj = {name: p.name, alive: p.alive, leader: p.leader};
+			if(game.players[index].role === p.role) {
+				pobj.selection = p.selection;
+				pobj.picked = p.picked;
+			}
 			if(p.name === name) {
 				pobj.role = p.role;
 				console.log(p);
