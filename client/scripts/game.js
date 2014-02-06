@@ -37,6 +37,11 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 		$location.path('/game/');
 	});
 	
+	socket.on('stop', function(data) {
+		$location.path('/');
+		
+	});
+
 	return {
 		connect: function(username, id, success, error) {
 			name = username;

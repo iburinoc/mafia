@@ -95,10 +95,10 @@ function initSocket(socket) {
 			if(games[id].setup) {
 				games[id].players.splice(games[id].findPlayer(name));
 				if(games[id].players.length === 0) {
-					games[id] = undefined;
+                    delete games[id];
 				} else {
 					if(leader) {
-						games[id].players[Math.floor(Math.random() * games[id].players.length)].leader = true;
+						games[id].stop("Leader disconnected");
 					}
 					games[id].update();
 				}
@@ -138,6 +138,7 @@ var roles = [{
 function Player(name, socket) {
 	this.name = name;
 	this.socket = socket;
+	this.alive = true;
 }
 
 function Game(leaderName, socket, id) {
@@ -243,6 +244,13 @@ function Game(leaderName, socket, id) {
 			game.players[i].socket.emit('start');
 		}
 	};
+    
+    this.stop = function(str) {
+        for(var i = 0; i < game.players.length; i++) {
+            game.players[i].socket.emit('stop', str);
+        }
+        game.players = [];
+    }
 	
 	this.validateRoles = function() {
 		var count = 0;
