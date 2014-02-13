@@ -136,13 +136,19 @@ var roles = [{
 	nightActivity: false,
 	action: null,
 	number: 0,
-	consensus: true
+	consensus: true,
+	action: function() {
+		return;
+	}
 },{
 	name: "Mafia",
 	nightActivity: true,
 	action: "Choose someone to kill",
 	number: 1,
-	consensus: true
+	consensus: true,
+	action: function(game, selection) {
+		
+	}
 }];
 
 function Player(name, socket) {
@@ -212,13 +218,28 @@ function Game(leaderName, socket, id) {
 				}
 			} else {
 				updatees.append(game.players[num]);
+				game.players[num].picked = true;
 			}
-			for(var u in updatees) {
-				updatees.socket.emit('data', game.getSendData(u.name));
+			for(var u = 0; u < updatees.length; u++) {
+				updatees.socket.emit('data', game.getSendData(updatees[u].name));
 			}
 		}
+		game.checkDoneNight();
 	}
 
+	this.checkDoneNight = function() {
+		for(var i = 0; i < game.players.length; i++) {
+			if(!game.players[i].picked) {
+				return;
+			}
+		}
+		game.endNight();
+	};
+
+	this.endNight = function() {
+			
+	}
+	
 	this.findPlayer = function(name) {
 		for(var i = 0; i < game.players.length; i++) {
 			if(game.players[i].name === name) {
