@@ -21,7 +21,7 @@ function cleanDead() {
 		} catch(err) { console.log(err); }
 	}
 	for(i in games) {
-		if(games[i].dead()) {
+		if(games[i].dead() && deadGames.indexOf(i) === -1) {
 			deadGames.push(i);
 		}
 	}
@@ -58,7 +58,7 @@ function initSocket(socket) {
 
 	socket.on('personClickNight', function(data) {
 		if(!games[id].players[games[id].findPlayer(name)].picked) {
-			games[id].nightClick(data);
+			games[id].nightClick(name, data);
 		}
 	});
 	
@@ -213,7 +213,7 @@ function Game(leaderName, socket, id) {
 			if(game.players[num].role.consensus) {
 				for(var p in game.players) {
 					if(game.players[p].role === game.players[num].role) {
-						updatees.append(game.players[p]);
+						updatees.push(game.players[p]);
 					}
 				}
 			} else {
@@ -257,12 +257,14 @@ function Game(leaderName, socket, id) {
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
 			pobj = {name: p.name, alive: p.alive, leader: p.leader};
-			if(game.players[index].role === p.role) {
+			if(game.players[index].role !== undefined && game.players[index].role === p.role && p.role.consensus) {
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
 			}
 			if(p.name === name) {
 				pobj.role = p.role;
+				pobj.selection = p.selection;
+				pobj.picked = p.picked;
 				console.log(p);
 				console.log(pobj);
 			} else {
@@ -318,7 +320,7 @@ function Game(leaderName, socket, id) {
 	
 	this.dead = function() {
 		for(var i = 0; i < game.players.length; i++){ 
-			if(!game.players.disconnected) {
+			if(!game.players[i].disconnected) {
 				return false;
 			}
 		}
