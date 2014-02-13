@@ -101,6 +101,9 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 		start: function() {
 			socket.emit('start');
             console.log('starting');
+		},
+		personClickNight: function(name) {
+			socket.emit('personClickNight', name);
 		}
 	};
 }]);
@@ -146,4 +149,14 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 	$scope.updateRoles = function() {
 		gameData.updateRoles($scope.roleNums.$valid);
 	};
+	
+	$scope.showSelection = function(player) {
+		return player.role === $scope.data.you.role && $scope.data.you.role.consensus === true && player !== $scope.data.you;
+	};
+	
+	$scope.personClick = function(name) {
+		if(!$scope.data.day) {
+			gameData.personClickNight(name);	
+		}
+	}
 }]);
