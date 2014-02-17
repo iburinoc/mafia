@@ -4,6 +4,8 @@ var games = {};
 
 var deadGames = [];
 
+var messageLimit = 5;
+
 function cleanDead() {
 	for(var i = 0; i < deadGames.length; i++) {
 		var id = deadGames[i]
@@ -12,8 +14,8 @@ function cleanDead() {
 				deadGames.splice(i);
 			} else {
 				if(games[id].deadChecked) {
+					delete games[deadGames[i]];
 					deadGames.splice(i);
-					delete games[i];
 				} else {
 					games[id].deadChecked = true;
 				}
@@ -137,8 +139,8 @@ var roles = [{
 	action: null,
 	number: 0,
 	consensus: true,
-	order = -1,
-	nightActionS: function() {}
+	order: -1,
+	nightActionS: function() {},
 	nightActionE: function() {}
 },{
 	name: "Mafia",
@@ -146,13 +148,15 @@ var roles = [{
 	action: "Choose someone to kill",
 	number: 1,
 	consensus: true,
-	order = 1,
-	nightActionS: function(game, selection) {
+	order: 1,
+	nightActionS: function(game, selection, selecter) {
 		selection.mark.mafia = true;
 	},
-	nightActionE: function(game, selection) {
+	nightActionE: function(game, selection, selecter) {
 		if(selection.mark.mafia) {
 			selection.alive = false;
+			selection.message = "You were killed by the mafia.";
+			game.addMessage(selection.name + " was killed by the mafia.");
 		}
 	}
 }];
@@ -162,6 +166,7 @@ function Player(name, socket) {
 	this.socket = socket;
 	this.alive = true;
 	this.mark = {};
+	this.message = "";
 }
 
 function Game(leaderName, socket, id) {
@@ -179,10 +184,19 @@ function Game(leaderName, socket, id) {
 	
 	this.roles = copyObj(roles);
 	
+	this.messages = [];
+
 	this.getLeader = function() {
 		return this.players[0];
 	}
 	
+	this.addMessage = function(message) {
+		messages.unshift(message);
+		if(messages.length > messageLimit) {
+			messages.splice(messageLimit);
+		}
+	}
+
 	this.update = function() {
 		game.updateRoles();
 		for(var i = 0; i < game.players.length; i++) {
@@ -264,7 +278,7 @@ function Game(leaderName, socket, id) {
 			var role = ordRoles[i];
 			for(var j = 0; j < game.players[j]; j++) {
 				if(game.players[j].role.name === role.name) {
-					role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)]);
+					role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
 				}
 			}
 		}
@@ -273,7 +287,7 @@ function Game(leaderName, socket, id) {
 			var role = ordRoles[i];
 			for(var j = 0; j < game.players[j]; j++) {
 				if(game.players[j].role.name === role.name) {
-					role.nightActionE(game, game.players[game.findPlayer(game.players[j].selection)]);
+					role.nightActionE(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
 				}
 			}
 		}	
@@ -290,7 +304,7 @@ function Game(leaderName, socket, id) {
 	};
 	
 	this.getSendData = function(name) {
-		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles};
+		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles, messages: game.messages};
 		var pobj = null;
 		var index = game.findPlayer(name);
 		data.players = [];
@@ -305,6 +319,7 @@ function Game(leaderName, socket, id) {
 				pobj.role = p.role;
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
+				pobj.message = p.message;
 				console.log(p);
 				console.log(pobj);
 			} else {
