@@ -254,41 +254,29 @@ function Game(leaderName, socket, id) {
 
 	this.endNight = function() {
 		var ordRoles = {};
-		for(var i = 0; i < game.roles.length; i++) {
-			if(game.roles[i].nightAction) {
-				ordRoles[games.roles[i].order] = game.roles[i];
+		for(var i = 0; i < roles.length; i++) {
+			if(roles[i].nightAction) {
+				ordRoles[roles[i].order] = roles[i];
 			}
 		}
 		
 		for(var i in ordRoles) {
 			var role = ordRoles[i];
-			if(role.consensus) {
-				var j = 0;
-				while(game.players[j].role.name !== role.name) j++;
-				role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)]);
-			} else {
-				for(var j = 0; j < game.players[j]; j++) {
-					if(game.players[j].role.name === role.name) {
-						role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)]);
-					}
+			for(var j = 0; j < game.players[j]; j++) {
+				if(game.players[j].role.name === role.name) {
+					role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)]);
 				}
 			}
 		}
 
 		for(var i in ordRoles) {
 			var role = ordRoles[i];
-			if(role.consensus) {
-				var j = 0;
-				while(game.players[j].role.name !== role.name) j++;
-				role.nightActionE(game, game.players[game.findPlayer(game.players[j].selection)]);
-			} else {
-				for(var j = 0; j < game.players[j]; j++) {
-					if(game.players[j].role.name === role.name) {
-						role.nightActionE(game, game.players[game.findPlayer(game.players[j].selection)]);
-					}
+			for(var j = 0; j < game.players[j]; j++) {
+				if(game.players[j].role.name === role.name) {
+					role.nightActionE(game, game.players[game.findPlayer(game.players[j].selection)]);
 				}
 			}
-		}
+		}	
 		game.update();
 	}
 	
@@ -406,3 +394,4 @@ function newGame(leaderName, socket) {
 }
 
 exports.initSocket = initSocket;
+
