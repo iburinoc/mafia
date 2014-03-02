@@ -154,9 +154,9 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 		return player.role === $scope.data.you.role && $scope.data.you.role.consensus === true && player !== $scope.data.you;
 	};
 	
-	$scope.personClick = function(name) {
+	$scope.personClick = function(p) {
 		if(!$scope.data.day) {
-			gameData.personClickNight(name);	
+			gameData.personClickNight(p.name);	
 		}
 	}
 }]);

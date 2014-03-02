@@ -251,7 +251,7 @@ function Game(leaderName, socket, id) {
 				game.players[num].picked = true;
 			}
 			for(var u = 0; u < updatees.length; u++) {
-				updatees.socket.emit('data', game.getSendData(updatees[u].name));
+				updatees[u].socket.emit('data', game.getSendData(updatees[u].name));
 			}
 		}
 		game.checkDoneNight();
