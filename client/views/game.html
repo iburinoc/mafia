@@ -3,9 +3,10 @@
 	<div>
 		<h3 id="action" ng-show="hasAction()">{{ data.you.role.action }}</h3>
 		<div class="btn-group">
-    <button ng-repeat="o in data.players" type="button" btn-checkbox ng-disabled="!o.alive || !hasAction()" class="btn btnPrimary personButton" ng-model="o.clicked" ng-click="personClick(o)">
-			{{ o.name }}
-		</button>
+			<button ng-repeat="o in data.players" type="button" ng-disabled="!o.alive || !hasAction()" class="btn btn-primary person-button" ng-model="data.you.selection" ng-click="personClick(o)" btn-radio="o.name">
+				{{ o.name }}
+			</button>
+		</div>
     </div>
 		<div id="selections" ng-show="data.you.role.consensus && data.you.role.number > 1">
 			<h1 ng-repeat="p in players | filter: showSelection">{{ p.name }}: {{ p.selection !== undefined ? "" : p.selection }}</h1>
