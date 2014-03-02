@@ -191,9 +191,9 @@ function Game(leaderName, socket, id) {
 	}
 	
 	this.addMessage = function(message) {
-		messages.unshift(message);
-		if(messages.length > messageLimit) {
-			messages.splice(messageLimit);
+		game.messages.unshift(message);
+		if(game.messages.length > messageLimit) {
+			game.messages.splice(messageLimit);
 		}
 	}
 
@@ -228,6 +228,7 @@ function Game(leaderName, socket, id) {
 	
 	this.nightClick = function(name, clickee) {
 		var num = game.findPlayer(name);
+		console.log(name + ' clicked on ' + clickee);
 		if(!game.players[num].picked && game.players[num].alive) {
 			game.players[num].selection = clickee;
 			var updatees = [];
@@ -267,16 +268,20 @@ function Game(leaderName, socket, id) {
 	};
 
 	this.endNight = function() {
-		var ordRoles = {};
+		console.log('night ended for ' + game.id);
+		ordRoles = {};
 		for(var i = 0; i < roles.length; i++) {
-			if(roles[i].nightAction) {
+			if(roles[i].nightActivity) {
 				ordRoles[roles[i].order] = roles[i];
 			}
 		}
 		
+		console.log(ordRoles);
+		
 		for(var i in ordRoles) {
 			var role = ordRoles[i];
-			for(var j = 0; j < game.players[j]; j++) {
+			console.log(role);
+			for(var j = 0; j < game.players.length; j++) {
 				if(game.players[j].role.name === role.name) {
 					role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
 				}
@@ -285,12 +290,14 @@ function Game(leaderName, socket, id) {
 
 		for(var i in ordRoles) {
 			var role = ordRoles[i];
-			for(var j = 0; j < game.players[j]; j++) {
+			console.log(role);
+			for(var j = 0; j < game.players.length; j++) {
 				if(game.players[j].role.name === role.name) {
 					role.nightActionE(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
 				}
 			}
-		}	
+		}
+		game.day = true;
 		game.update();
 	}
 	
@@ -409,4 +416,3 @@ function newGame(leaderName, socket) {
 }
 
 exports.initSocket = initSocket;
-
