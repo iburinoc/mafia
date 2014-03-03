@@ -1,7 +1,7 @@
 var mafia = angular.module('mafia', ['ngRoute', 'ui.bootstrap']);
 var ip = 'http://localhost:3006';
 
-mafia.factory('socket', function ($rootScope) {
+mafia.factory('socket', ['$rootScope', function ($rootScope) {
 	var socket = io.connect('/');
 	return {
 		on: function (eventName, callback) {
@@ -25,7 +25,7 @@ mafia.factory('socket', function ($rootScope) {
 			})
 		}
 	};
-});
+}]);
 
 mafia.config(['$routeProvider', function($routeProvider) {
     $routeProvider

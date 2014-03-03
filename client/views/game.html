@@ -1,27 +1,35 @@
 <div id="game" align="left" class="game-div">
 	<h1 id="time">It is currently {{data.day?"day":"night"}} time.</h1>
 	<div>
-		<h3 id="action" ng-show="hasAction()">{{ data.you.role.action }}</h3>
-		<div class="btn-group">
-			<button ng-repeat="o in data.players" type="button" ng-disabled="!o.alive || !hasAction()" class="btn btn-primary person-button" ng-model="data.you.selection" ng-click="personClick(o)" btn-radio="o.name">
+		<h3 id="nightAction" ng-show="hasNightAction() && !data.day">{{ data.you.role.action }}</h3>
+		<h3 id="nominate" ng-show="hasNomAction()">{{ nomtext }}</h3>
+		<div class="btn-group" ng-show="hasAction()">
+			<button ng-repeat="o in data.players" type="button" class="btn btn-primary person-button" ng-model="data.you.selection" ng-click="personClick(o)" btn-radio="o.name">
 				{{ o.name }}
 			</button>
+		</div>
+		<div id="secondOther" ng-show="data.phase === 'second' && data.nominator !== data.you.name">
+			<h3>{{ data.nominator }} has nominated {{ data.nominatee }}.  Second?</h3>
+			<button type="button" class="btn btn-primary">Second!</button>
+			<h4>Nomination attempt over in {{ data.timer }}s.</h4>
+		</div>
+		<div id="secondYou" ng-show="data.phase === 'second' && data.nominator === data.you.name">
+			<h3>You have nominated {{ data.nominatee }}.</h3><br>
+			<h4>Nomination attempt over in {{ data.timer }}s.</h4>
 		</div>
     </div>
 	<div id="selections" ng-show="data.you.role.consensus && data.you.role.number > 1 && data.you.role.nightActivity">
 		<h3>Team Selections:</h3>
-		<h4 class="selection" ng-repeat="p in data.players" ng-show="showSelection(p);">{{ p.name }}: {{ p.selection }}</h1>
+		<h4 class="indent" ng-repeat="p in data.players" ng-show="showSelection(p);">{{ p.name }}: {{ p.selection }}</h1>
     </div>
 	<h3>You:</h3>
-	<div>
-		<p>
-			Name: {{ data.you.name }} <br>
-			Role: {{ data.you.role.name }} <br>
-		</p>
+	<div class="indent">
+		<h4>Name: {{ data.you.name }}<br></h4>
+		<h4>Role: {{ data.you.role.name }}<br></h4>
 	</div>
 	<div>
 		<h4>Messages:</h4>
-		<textarea id="messages" rows="10" cols="50" disabled></textarea><br />
+		<textarea id="messages" rows="10" cols="50" disabled></textarea><br>
 		<input id="writeMessage" type="text" cols="50">
 	</div>
 </div>

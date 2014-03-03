@@ -65,8 +65,10 @@ function initSocket(socket) { // init this when the person connects.
 		}
 	});
 	
-	socket.on('nominate', function(data) {
-		// TODO
+	socket.on('nomination', function(data) {
+		if(games[id].phase === 'nomination' && games[id].day) {
+			games[id].nomination(name, data);
+		}
 	});
 	
 	socket.on('newgame', function(data) {
@@ -82,7 +84,7 @@ function initSocket(socket) { // init this when the person connects.
 			if(player !== undefined) { // am i ever gonna fix this?
 				if(player.disconnected) {
 					player.disconnected = undefined;
-					socket.emit('gameData', games[data.id].getSendData(name));
+					socket.emit('gameData', games[data.id].getSendData(data.name));
 					leader = !!player.leader;
 				} else {
 					socket.emit('nameexists', {});
@@ -156,10 +158,11 @@ var roles = [{
 		selection.mark.mafia = true;
 	},
 	nightActionE: function(game, selection, selecter) {
-		if(selection.mark.mafia) {
+		if(selection && selection.mark.mafia) {
 			selection.alive = false;
-			selection.message = "You were killed by the mafia.";
-			game.addMessage(selection.name + " was killed by the mafia.");
+			//selection.message = "You were killed by the mafia.";
+			//game.addMessage(selection.name + " was killed by the mafia.");
+			delete selection.mark.mafia;
 		}
 	}
 }];
@@ -181,6 +184,8 @@ function Game(leaderName, socket, id) { // Game constructor
 	leader.leader = true;
 	this.players = [leader];
 	
+	this.dead = [];
+	
 	this.setup = true;
 	
 	this.day = false;
@@ -188,6 +193,17 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.roles = copyObj(roles); // change this at some point?  the only mutable part is the number for each
 	
 	this.messages = [];  // remove this, clients can keep track of these
+	
+	var nomtimer;
+	
+	function nomtimerCounter() {
+		if(game.timer > 0) {
+			game.timer--;
+			console.log('nomtimer' + game.id + ': ' + game.timer);
+		} else if(game.timer === 0) {
+			game.nomdone();
+		}
+	}
 	
 	this.addMessage = function(message) {
 		game.messages.unshift(message);
@@ -202,7 +218,8 @@ function Game(leaderName, socket, id) { // Game constructor
 	}
 
 	this.update = function() { // updates all clients
-		game.updateRoles();
+		if(game.setup)
+			game.updateRoles();
 		for(var i = 0; i < game.players.length; i++) {
 			game.players[i].socket.emit('gameData', this.getSendData(game.players[i].name));
 		}
@@ -219,10 +236,8 @@ function Game(leaderName, socket, id) { // Game constructor
 			} else {
 				civ = role;
 			}
-			console.log(role.name + ":" + role.number);
 		}
 		civ.number = game.players.length - n;
-		console.log(civ.name + ":" + civ.number);
 	}
 	
 	this.nightClick = function(name, clickee) {
@@ -237,15 +252,13 @@ function Game(leaderName, socket, id) { // Game constructor
 				for(var p in game.players) {
 					if(game.players[p].role.name === game.players[num].role.name) {
 						updatees.push(game.players[p]);
-						console.log(game.players[p].selection);
-						console.log(clickee);
+						//console.log(game.players[p].selection);
+						//console.log(clickee);
 						if(game.players[p].selection !== clickee) {
-							console.log('cons unset');
 							cons = false;
 						}
 					}
 				}
-				console.log(cons);
 				if(cons) {
 					for(var i = 0; i < updatees.length; i++) {
 						updatees[i].picked = true;
@@ -255,13 +268,28 @@ function Game(leaderName, socket, id) { // Game constructor
 				updatees.append(game.players[num]);
 				game.players[num].picked = true;
 			}
-			console.log(updatees);
 			for(var u = 0; u < updatees.length; u++) {
-				console.log(updatees[u]);
 				updatees[u].socket.emit('gameData', game.getSendData(updatees[u].name));
 			}
 		}
 		game.checkDoneNight();
+	}
+	
+	this.nomination = function(nominator, nominatee) {
+		game.nominator = nominator;
+		game.nominatee = nominatee;
+		game.timer = 10;
+		game.phase = 'second';
+		nomtimer = setInterval(nomtimerCounter, 1000);
+		game.update();
+	}
+	
+	this.nomdone = function() {
+		delete game.nominator;
+		delete game.nominatee;
+		game.phase = 'nomination';
+		clearInterval(nomtimer);
+		game.update();
 	}
 
 	this.checkDoneNight = function() {
@@ -282,11 +310,8 @@ function Game(leaderName, socket, id) { // Game constructor
 			}
 		}
 		
-		console.log(ordRoles);
-		
 		for(var i in ordRoles) {
 			var role = ordRoles[i];
-			console.log(role);
 			for(var j = 0; j < game.players.length; j++) {
 				if(game.players[j].role.name === role.name) {
 					role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
@@ -296,7 +321,6 @@ function Game(leaderName, socket, id) { // Game constructor
 
 		for(var i in ordRoles) {
 			var role = ordRoles[i];
-			console.log(role);
 			for(var j = 0; j < game.players.length; j++) {
 				if(game.players[j].role.name === role.name) {
 					role.nightActionE(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
@@ -304,6 +328,11 @@ function Game(leaderName, socket, id) { // Game constructor
 			}
 		}
 		game.day = true;
+		game.phase = 'nomination';
+		for(var i in game.players) {
+			delete game.players[i].selection;
+			game.players[i].picked = false;
+		}
 		game.update();
 	}
 	
@@ -317,7 +346,8 @@ function Game(leaderName, socket, id) { // Game constructor
 	};
 	
 	this.getSendData = function(name) { // get the data safe to send to a player
-		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles, messages: game.messages};
+		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles,
+			phase: game.phase, timer: game.timer, nominator: game.nominator, nominatee: game.nominatee};
 		var pobj = null;
 		var index = game.findPlayer(name);
 		data.players = [];
@@ -344,7 +374,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		return data;
 	};
 	
-	// TODO: getSendDeadData
+	// TODO: getDeadSendData
 	
 	this.start = function() {
 		if(!game.validateRoles()) {

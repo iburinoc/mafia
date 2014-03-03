@@ -104,11 +104,14 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 		},
 		personClickNight: function(name) {
 			socket.emit('personClickNight', name);
+		},
+		nomination: function(name) {
+			socket.emit('nomination', name);
 		}
 	};
 }]);
 
-mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', function($scope, $location, $http, gameData) {
+mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gameData', function($scope, $rootScope, $location, $http, gameData) {
     $scope.data = gameData.getData();
 	if($scope.data == null) {
 		$location.path('/');
@@ -139,11 +142,20 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
         return item.alive;
     };
 	
-    $scope.hasAction = function() {
-		if($scope.data != null)
-			return $scope.data.you.role.nightActivity && $scope.data.you.alive;
-		else
-			return false;
+	$scope.hasAction = function() {
+		if(!$scope.data.day) {
+			return $scope.hasNightAction();
+		} else {
+			return $scope.hasNomAction();
+		}
+	}
+	
+	$scope.hasNomAction = function() {
+		return $scope.data.day && $scope.data.phase === 'nomination';
+	}
+	
+    $scope.hasNightAction = function() {
+			return $scope.data && $scope.data.you.role.nightActivity && $scope.data.you.alive;
 	};
 	
 	$scope.updateRoles = function() {
@@ -155,8 +167,22 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 	};
 	
 	$scope.personClick = function(p) {
-		if(!$scope.data.day) {
-			gameData.personClickNight(p.name);	
+		if(!$scope.data.day && $scope.data.you.role.nightActivity) {
+			gameData.personClickNight(p.name);
+		}
+		if($scope.data.day && $scope.data.phase === 'nomination') {
+			gameData.nomination(p.name);
 		}
 	}
+	
+	var timer = setInterval(function() {
+		if($scope.data.timer > 0) {
+			$rootScope.$apply(function() {
+				$scope.data.timer--;
+			});
+		}
+	}, 1000);
+	
+	// GAME TEXT GOES HERE
+	$scope.nomtext = "Choose someone to nominate for lynching if you wish"
 }]);
