@@ -270,7 +270,7 @@ function Game(leaderName, socket, id) { // Game constructor
 				return;
 			}
 		}
-		game.endNight();
+		setTimeout(game.endNight, 1000);
 	};
 
 	this.endNight = function() {
