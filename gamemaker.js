@@ -229,30 +229,37 @@ function Game(leaderName, socket, id) {
 	this.nightClick = function(name, clickee) {
 		var num = game.findPlayer(name);
 		console.log(name + ' clicked on ' + clickee);
-		if(!game.players[num].picked && game.players[num].alive) {
+		if(num === -1) return;
+		if(!game.players[num].picked) {
 			game.players[num].selection = clickee;
 			var updatees = [];
 			if(game.players[num].role.consensus) {
+				var cons = true;
 				for(var p in game.players) {
-					var cons = true;
 					if(game.players[p].role.name === game.players[num].role.name) {
 						updatees.push(game.players[p]);
+						console.log(game.players[p].selection);
+						console.log(clickee);
 						if(game.players[p].selection !== clickee) {
+							console.log('cons unset');
 							cons = false;
 						}
 					}
-					if(cons) {
-						for(var i = 0; i < updatees.length; i++) {
-							updatees[i].picked = true;
-						}
+				}
+				console.log(cons);
+				if(cons) {
+					for(var i = 0; i < updatees.length; i++) {
+						updatees[i].picked = true;
 					}
 				}
 			} else {
 				updatees.append(game.players[num]);
 				game.players[num].picked = true;
 			}
+			console.log(updatees);
 			for(var u = 0; u < updatees.length; u++) {
-				updatees[u].socket.emit('data', game.getSendData(updatees[u].name));
+				console.log(updatees[u]);
+				updatees[u].socket.emit('gameData', game.getSendData(updatees[u].name));
 			}
 		}
 		game.checkDoneNight();
@@ -260,7 +267,7 @@ function Game(leaderName, socket, id) {
 
 	this.checkDoneNight = function() {
 		for(var i = 0; i < game.players.length; i++) {
-			if(!game.players[i].picked && game.players[i].role.nightAction && game.players[i].alive) {
+			if(!game.players[i].picked && game.players[i].role.nightActivity) {
 				return;
 			}
 		}
@@ -327,11 +334,7 @@ function Game(leaderName, socket, id) {
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
 				pobj.message = p.message;
-				console.log(p);
-				console.log(pobj);
 			} else {
-				console.log(p);
-				console.log(pobj);
 				if(!p.alive) {
 					pobj.role = p.role;
 				}

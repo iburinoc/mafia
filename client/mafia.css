@@ -59,3 +59,7 @@ button.person-button {
     margin-left: 2px;
     min-width: 50px;
 }
+
+#messages {
+	resize: none;
+}

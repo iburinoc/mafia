@@ -1,5 +1,5 @@
 <div id="game" align="left" class="game-div">
-	<h1 id="time">It is currently {{day?"day":"night"}} time.</h1>
+	<h1 id="time">It is currently {{data.day?"day":"night"}} time.</h1>
 	<div>
 		<h3 id="action" ng-show="hasAction()">{{ data.you.role.action }}</h3>
 		<div class="btn-group">
@@ -9,13 +9,19 @@
 		</div>
     </div>
 	<div id="selections" ng-show="data.you.role.consensus && data.you.role.number > 1">
-		<h1 ng-repeat="p in players | filter: showSelection">{{ p.name }}: {{ p.selection !== undefined ? "" : p.selection }}</h1>
+		<h3>Team Selections</h3>
+		<h5 ng-repeat="p in players | filter: showSelection">{{ p.name }}: {{ p.selection !== undefined ? "" : p.selection }}</h1>
     </div>
-	<h2>You:</h2>
+	<h3>You:</h3>
 	<div>
 		<p>
 			Name: {{ data.you.name }} <br>
 			Role: {{ data.you.role.name }} <br>
 		</p>
+	</div>
+	<div>
+		<h4>Messages:</h4>
+		<textarea id="messages" rows="10" cols="50" disabled></textarea><br />
+		<input id="writeMessage" type="text" cols="50">
 	</div>
 </div>
