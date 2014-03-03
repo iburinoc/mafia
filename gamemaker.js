@@ -1,12 +1,12 @@
-var maxGames = 0xffffffff;
+var maxGames = 0xffffffff; // The range of games
 
-var games = {};
+var games = {}; // Associative array of all current games
 
-var deadGames = [];
+var deadGames = []; // Games ready for collection
 
-var messageLimit = 5;
+var messageLimit = 5; // TODO: message system.  this should be increased to ~100?
 
-function cleanDead() {
+function cleanDead() { // checks for dead games every minute
 	for(var i = 0; i < deadGames.length; i++) {
 		var id = deadGames[i]
 		try {
@@ -35,9 +35,10 @@ function cleanDead() {
 
 setInterval(cleanDead, 60000);
 
-function initSocket(socket) {
+//TODO: add input checking cuz theres probably a bunch of things a bad person could do here
+function initSocket(socket) { // init this when the person connects.
 	var id = "0";
-	var name;
+	var name; // TODO: add checking for the name
 	var leader;
 
 	socket.on('roles', function(data) {
@@ -65,7 +66,7 @@ function initSocket(socket) {
 	});
 	
 	socket.on('nominate', function(data) {
-		
+		// TODO
 	});
 	
 	socket.on('newgame', function(data) {
@@ -78,7 +79,7 @@ function initSocket(socket) {
 	socket.on('connect', function(data) {
 		if(games[data.id] !== undefined) {
 			var player = games[data.id].players[games[data.id].findPlayer(data.name)];
-			if(player !== undefined) {
+			if(player !== undefined) { // am i ever gonna fix this?
 				if(player.disconnected) {
 					player.disconnected = undefined;
 					socket.emit('gameData', games[data.id].getSendData(name));
@@ -102,7 +103,8 @@ function initSocket(socket) {
 		}
 	});
 	
-	function dc() {
+	function dc() { // dc, its a named function as it could be called from returning to menu or from disconnecting socket
+		// when all players have dc'ed, it is ready for garbage collection
 		if(games[id] !== undefined) {
 			if(games[id].setup) {
 				games[id].players.splice(games[id].findPlayer(name));
@@ -133,6 +135,7 @@ function initSocket(socket) {
 	socket.on('dc', dc);
 }
 
+// list of roles, pretty self explanatory
 var roles = [{
 	name: "Civilian",
 	nightActivity: false,
@@ -161,7 +164,7 @@ var roles = [{
 	}
 }];
 
-function Player(name, socket) {
+function Player(name, socket) { // Player constructor
 	this.name = name;
 	this.socket = socket;
 	this.alive = true;
@@ -169,8 +172,8 @@ function Player(name, socket) {
 	this.message = "";
 }
 
-function Game(leaderName, socket, id) {
-	var game = this;
+function Game(leaderName, socket, id) { // Game constructor
+	var game = this; // damn function objects
 	
 	this.id = id;
 	
@@ -182,13 +185,9 @@ function Game(leaderName, socket, id) {
 	
 	this.day = false;
 	
-	this.roles = copyObj(roles);
+	this.roles = copyObj(roles); // change this at some point?  the only mutable part is the number for each
 	
-	this.messages = [];
-
-	this.getLeader = function() {
-		return this.players[0];
-	}
+	this.messages = [];  // remove this, clients can keep track of these
 	
 	this.addMessage = function(message) {
 		game.messages.unshift(message);
@@ -197,7 +196,12 @@ function Game(leaderName, socket, id) {
 		}
 	}
 
-	this.update = function() {
+	this.addPlayer = function(p) {
+		game.players.push(p);
+		game.update();
+	}
+
+	this.update = function() { // updates all clients
 		game.updateRoles();
 		for(var i = 0; i < game.players.length; i++) {
 			game.players[i].socket.emit('gameData', this.getSendData(game.players[i].name));
@@ -205,12 +209,7 @@ function Game(leaderName, socket, id) {
 		console.log(game);
 	}
 	
-	this.addPlayer = function(p) {
-		game.players.push(p);
-		game.update();
-	}
-	
-	this.updateRoles = function() {
+	this.updateRoles = function() { // for when the leader changes numbers
 		var n = 0;
 		var civ;
 		for(var i = 0; i < game.roles.length; i++) {
@@ -308,7 +307,7 @@ function Game(leaderName, socket, id) {
 		game.update();
 	}
 	
-	this.findPlayer = function(name) {
+	this.findPlayer = function(name) { // gets the index in the players array of a certain player
 		for(var i = 0; i < game.players.length; i++) {
 			if(game.players[i].name === name) {
 				return i;
@@ -317,7 +316,7 @@ function Game(leaderName, socket, id) {
 		return -1;
 	};
 	
-	this.getSendData = function(name) {
+	this.getSendData = function(name) { // get the data safe to send to a player
 		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles, messages: game.messages};
 		var pobj = null;
 		var index = game.findPlayer(name);
@@ -343,6 +342,8 @@ function Game(leaderName, socket, id) {
 		}
 		return data;
 	};
+	
+	// TODO: getSendDeadData
 	
 	this.start = function() {
 		if(!game.validateRoles()) {
