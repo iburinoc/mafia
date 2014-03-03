@@ -151,7 +151,7 @@ mafia.controller('GameCtrl', ['$scope', '$location', '$http', 'gameData', functi
 	};
 	
 	$scope.showSelection = function(player) {
-		return player.role === $scope.data.you.role && player !== $scope.data.you;
+		return player.role && player.role.name === $scope.data.you.role.name;// && player !== $scope.data.you;
 	};
 	
 	$scope.personClick = function(p) {

@@ -327,6 +327,7 @@ function Game(leaderName, socket, id) { // Game constructor
 			if(game.players[index].role !== undefined && game.players[index].role === p.role && p.role.consensus) {
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
+				pobj.role = p.role;
 			}
 			if(p.name === name) {
 				pobj.role = p.role;

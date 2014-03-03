@@ -60,6 +60,16 @@ button.person-button {
     min-width: 50px;
 }
 
+button.person-button.ng-valid.ng-dirty {
+	border-color: white;
+	outline-color: white;
+}
+
+.selection {
+	margin-left: 20px;
+}
+
 #messages {
 	resize: none;
 }
+
