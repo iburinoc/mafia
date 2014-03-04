@@ -3,11 +3,18 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 	var callbacks = [];
 	var name;
 	
+	var messageCB;
+
 	function getYou() {
 		for(var i = 0; i < data.players.length; i++) {
 			var p = data.players[i];
-			if(p.name == name) {
+			if(p.name === name) {
 				return p;
+			}
+		}
+		for(var i = 0; i < data.dead.length; i++) {
+			if(p.name === data.dead[i].name) {
+				return data.dead[i];
 			}
 		}
 		return null;
@@ -52,6 +59,14 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 	}
 	
 	callbacks.push(timerChecker);
+
+	socket.on('message', function(data) {
+		console.log('message received: ' + data);
+		if(messageCB) {
+			messageCB(data);
+		}
+	});
+			
 	
 	socket.on('start', function() {
 		$location.path('/game/');
@@ -95,7 +110,7 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 			return callbacks;
 		},
 		onMessage: function(cb) {
-			socket.on('message', cb);
+			messageCB = cb;	
 		},
 		message: function(data) {
 			socket.emit('message', data);
@@ -207,13 +222,14 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 	
 	$scope.messages = '';
 	gameData.onMessage(function(data) {
-		messages += '\n' + data;
+		$scope.messages += data + '\n';
 	});
 	
 	$scope.message = '';
 	$scope.messageKeyD = function($event) {
 		if($event.keyCode === 13 && $scope.message !== '') {
 			gameData.message($scope.message);
+			$scope.message = '';
 		}
 	}
 	

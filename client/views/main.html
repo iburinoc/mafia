@@ -2,7 +2,7 @@
     <div id="menu">
         <h1>Welcome to Mafia</h1>
 		<form name="username">
-        	<input type="text" name="name" ng-model="username.name.uname" ng-pattern="/^[a-zA-Z0-9_]{3,20}$/" placeholder="Enter username" class="form-control" required>
+        	<input type="text" name="name" ng-model="username.name.uname" ng-pattern="/^[a-zA-Z0-9_]{3,20}$/" placeholder="Enter username" class="form-control menu-input" required>
         </form>
         <div id="new-game">
 			<button id="new-game-btn" class="btn btn-primary" ng-disabled="username.name.$invalid || username.name.$pristine" ng-click="newGameFn();">New Game</button>
@@ -10,7 +10,7 @@
         
         <form id="join-game" name="joinGame"> 
             
-            <input type="text" name="gameID" ng-model="joinGame.gameID.id" ng-required="joinMouseOver" ng-minLength="8" ng-maxLength="8" ng-pattern="/^[0-9A-Fa-f]+$/" class="form-control" placeholder="Enter game code">
+            <input type="text" name="gameID" ng-model="joinGame.gameID.id" ng-required="joinMouseOver" ng-minLength="8" ng-maxLength="8" ng-pattern="/^[0-9A-Fa-f]+$/" class="form-control menu-input" placeholder="Enter game code">
             
             <button id="join-game-btn" class="btn btn-default" ng-disabled="joinGame.gameID.$invalid || joinGame.gameID.$pristine || username.name.$invalid || username.name.$pristine" ng-click="joinGameFn();">Join Game</button>
         </form>

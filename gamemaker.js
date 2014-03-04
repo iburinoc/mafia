@@ -6,11 +6,13 @@ var deadGames = []; // Games ready for collection
 
 var messageLimit = 5; // TODO: message system.  this should be increased to ~100?
 
+var secondTimer = 15;
+
 function cleanDead() { // checks for dead games every minute
 	for(var i = 0; i < deadGames.length; i++) {
 		var id = deadGames[i]
 		try {
-			if(!(games[id].dead())) {
+			if(!(games[id].isdead())) {
 				deadGames.splice(i);
 			} else {
 				if(games[id].deadChecked) {
@@ -23,7 +25,7 @@ function cleanDead() { // checks for dead games every minute
 		} catch(err) { console.log(err); }
 	}
 	for(i in games) {
-		if(games[i].dead() && deadGames.indexOf(i) === -1) {
+		if(games[i].isdead() && deadGames.indexOf(i) === -1) {
 			deadGames.push(i);
 		}
 	}
@@ -106,7 +108,7 @@ function initSocket(socket) { // init this when the person connects.
 	});
 	
 	socket.on('message', function(data) {
-		games[id].message(data);
+		games[id].message('<' + name + '> ' + data);
 	});
 	
 	
@@ -125,7 +127,7 @@ function initSocket(socket) { // init this when the person connects.
 				}
 			} else {
 				games[id].players[games[id].findPlayer(name)].disconnected = true;
-				if(games[id].dead()) {
+				if(games[id].isdead()) {
 					deadGames.push(id);
 				}
 			}
@@ -164,9 +166,8 @@ var roles = [{
 	},
 	nightActionE: function(game, selection, selecter) {
 		if(selection && selection.mark.mafia) {
-			selection.alive = false;
-			//selection.message = "You were killed by the mafia.";
-			//game.addMessage(selection.name + " was killed by the mafia.");
+			game.kill(selection);
+			game.message('<God> ' + selection.name + ' was killed by the mafia.');
 			delete selection.mark.mafia;
 		}
 	}
@@ -224,6 +225,12 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.addPlayer = function(p) {
 		game.players.push(p);
 		game.update();
+	}
+	
+	this.kill = function(p) {
+		game.dead.push(p);
+		p.alive = false;
+		game.players.splice(game.findPlayer(p.name));
 	}
 
 	this.update = function() { // updates all clients
@@ -287,7 +294,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.nomination = function(nominator, nominatee) {
 		game.nominator = nominator;
 		game.nominatee = nominatee;
-		game.timer = 10;
+		game.timer = secondTimer;
 		game.phase = 'second';
 		game.players[game.findPlayer(nominatee)].nominated = true;
 		nomtimer = setInterval(nomtimerCounter, 1000);
@@ -373,12 +380,12 @@ function Game(leaderName, socket, id) { // Game constructor
 				pobj.role = p.role;
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
-			} else {
-				if(!p.alive) {
-					pobj.role = p.role;
-				}
 			}
 			data.players.push(pobj);
+		}
+		data.dead = [];
+		for(var i = 0; i < game.dead.length; i++) {
+			data.dead.push({name: data.dead[i].name, role: data.dead[i].role.name, alive: false});
 		}
 		return data;
 	};
@@ -424,7 +431,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		return count === game.players.length;
 	};
 	
-	this.dead = function() {
+	this.isdead = function() {
 		for(var i = 0; i < game.players.length; i++){ 
 			if(!game.players[i].disconnected) {
 				return false;

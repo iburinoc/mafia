@@ -26,10 +26,15 @@
 	<div class="indent">
 		<h4>Name: {{ data.you.name }}<br></h4>
 		<h4>Role: {{ data.you.role.name }}<br></h4>
+		<h4>Alive: {{ data.you.alive }}<br></h4>
+	</div>
+	<div ng-show="data.dead.length > 0">
+		<h4>Dead Players:</h4>
+		<h5 ng-repeat="p in data.dead" class="indent">{{ p.name }}: {{ p.role }}</h5>
 	</div>
 	<div>
 		<h4>Messages:</h4>
-		<textarea id="messages" rows="10" disabled>{{ messages }}</textarea><br>
+		<textarea id="messages" rows="10" readonly>{{ messages }}</textarea><br>
 		<input id="writeMessage" type="text" cols="50" ng-keydown="messageKeyD($event);" ng-model="message">
 	</div>
 </div>

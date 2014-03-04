@@ -33,12 +33,12 @@ button#new-game-btn {
     margin-top: 49px;
 }
 
-.ng-invalid.ng-dirty {
+.menu-input.ng-invalid.ng-dirty {
   border-color: red;
   outline-color: red;
 }
 
-.ng-valid.ng-dirty {
+.menu-input.ng-valid.ng-dirty {
   border-color: green;
   outline-color: green;
 }
