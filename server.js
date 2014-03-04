@@ -4,7 +4,7 @@ var http = require('http'),
 	fs = require('fs'),
 	server = http.createServer(handler),
 	io = require('socket.io').listen(server),
-	game = require('./gamemaker'),
+	game = require('./god'),
 	index = fs.readFileSync('index.html');
 
 server.listen(3006);
