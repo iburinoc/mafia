@@ -4,7 +4,7 @@
 		<h3 id="nightAction" ng-show="hasNightAction() && !data.day">{{ data.you.role.action }}</h3>
 		<h3 id="nominate" ng-show="hasNomAction()">{{ nomtext }}</h3>
 		<div class="btn-group" ng-show="hasAction()">
-			<button ng-repeat="o in data.players" type="button" class="btn btn-primary person-button" ng-model="data.you.selection" ng-click="personClick(o)" btn-radio="o.name">
+			<button ng-repeat="o in data.players" type="button" ng-disabled="pButtonDis(o);" class="btn btn-primary person-button" ng-model="data.you.selection" ng-click="personClick(o)" btn-radio="o.name">
 				{{ o.name }}
 			</button>
 		</div>
@@ -29,7 +29,7 @@
 	</div>
 	<div>
 		<h4>Messages:</h4>
-		<textarea id="messages" rows="10" cols="50" disabled></textarea><br>
-		<input id="writeMessage" type="text" cols="50">
+		<textarea id="messages" rows="10" disabled>{{ messages }}</textarea><br>
+		<input id="writeMessage" type="text" cols="50" ng-keydown="messageKeyD($event);" ng-model="message">
 	</div>
 </div>

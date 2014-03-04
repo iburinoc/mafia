@@ -71,4 +71,19 @@ button.person-button.ng-valid.ng-dirty {
 
 #messages {
 	resize: none;
+	width: 200px;
+	max-width: 200px;
+	overflow-x: wrap;
+}
+
+#writeMessage {
+	width: 200px;
+	max-width: 200px;
+	min-width: 200px;
+	margin-top: 5px;
+}
+
+#writeMesage.ng-dirty.ng-valid {
+	border-color: white;
+	outline-color: white;
 }

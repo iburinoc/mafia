@@ -59,7 +59,6 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 	
 	socket.on('stop', function(data) {
 		$location.path('/');
-		
 	});
 
 	return {
@@ -94,6 +93,12 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 		},
 		callbacks: function() {
 			return callbacks;
+		},
+		onMessage: function(cb) {
+			socket.on('message', cb);
+		},
+		message: function(data) {
+			socket.emit('message', data);
 		},
 		setName: function(n) {
 			name = n;
@@ -132,6 +137,7 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 }]);
 
 mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gameData', function($scope, $rootScope, $location, $http, gameData) {
+	
     $scope.data = gameData.getData();
 	if($scope.data == null) {
 		$location.path('/');
@@ -170,6 +176,10 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 		}
 	}
 	
+	$scope.pButtonDis = function(player) {
+		return $scope.data.day && player.nominated;
+	}
+	
 	$scope.hasNomAction = function() {
 		return $scope.data.day && $scope.data.phase === 'nomination';
 	}
@@ -192,6 +202,18 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 		}
 		if($scope.data.day && $scope.data.phase === 'nomination') {
 			gameData.nomination(p.name);
+		}
+	}
+	
+	$scope.messages = '';
+	gameData.onMessage(function(data) {
+		messages += '\n' + data;
+	});
+	
+	$scope.message = '';
+	$scope.messageKeyD = function($event) {
+		if($event.keyCode === 13 && $scope.message !== '') {
+			gameData.message($scope.message);
 		}
 	}
 	

@@ -66,7 +66,7 @@ function initSocket(socket) { // init this when the person connects.
 	});
 	
 	socket.on('nomination', function(data) {
-		if(games[id].phase === 'nomination' && games[id].day) {
+		if(games[id].phase === 'nomination' && games[id].day && !games[id].players[games[id].findPlayer(data)].nominated) {
 			games[id].nomination(name, data);
 		}
 	});
@@ -104,6 +104,11 @@ function initSocket(socket) { // init this when the person connects.
 			socket.emit('notfound', {});
 		}
 	});
+	
+	socket.on('message', function(data) {
+		games[id].message(data);
+	});
+	
 	
 	function dc() { // dc, its a named function as it could be called from returning to menu or from disconnecting socket
 		// when all players have dc'ed, it is ready for garbage collection
@@ -192,8 +197,6 @@ function Game(leaderName, socket, id) { // Game constructor
 	
 	this.roles = copyObj(roles); // change this at some point?  the only mutable part is the number for each
 	
-	this.messages = [];  // remove this, clients can keep track of these
-	
 	var nomtimer;
 	
 	function nomtimerCounter() {
@@ -205,10 +208,16 @@ function Game(leaderName, socket, id) { // Game constructor
 		}
 	}
 	
-	this.addMessage = function(message) {
-		game.messages.unshift(message);
-		if(game.messages.length > messageLimit) {
-			game.messages.splice(messageLimit);
+	this.message = function(message, dest) {
+		if(dest) {
+			var index = game.findPlayer(dest);
+			if(index != -1) {
+				game.players[index].socket.emit('message', message);
+			}
+		} else {
+			for(var p in game.players) {
+				game.players[p].socket.emit('message', message);
+			}
 		}
 	}
 
@@ -280,6 +289,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		game.nominatee = nominatee;
 		game.timer = 10;
 		game.phase = 'second';
+		game.players[game.findPlayer(nominatee)].nominated = true;
 		nomtimer = setInterval(nomtimerCounter, 1000);
 		game.update();
 	}
@@ -353,7 +363,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		data.players = [];
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
-			pobj = {name: p.name, alive: p.alive, leader: p.leader};
+			pobj = {name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated};
 			if(game.players[index].role !== undefined && game.players[index].role === p.role && p.role.consensus) {
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
@@ -363,7 +373,6 @@ function Game(leaderName, socket, id) { // Game constructor
 				pobj.role = p.role;
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
-				pobj.message = p.message;
 			} else {
 				if(!p.alive) {
 					pobj.role = p.role;
