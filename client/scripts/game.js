@@ -1,4 +1,4 @@
-mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $location, socket) {
+mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', function($rootScope, $http, $location, socket) {
 	var data = null;
 	var callbacks = [];
 	var name;
@@ -32,6 +32,26 @@ mafia.factory('gameData', ['$http', '$location', 'socket', function($http, $loca
 			callbacks[i](g);
 		}
 	});
+	
+	function timerChecker(g) {
+		var timerInterval;
+		if(g.timer > 0) {
+			if(timerInterval) {
+				clearInterval(timerInterval);
+			}
+			timerInterval = setInterval(function() {
+				$rootScope.$apply(function() {
+					g.timer--;
+					if(g.timer <= 0) {
+						clearInterval(timerInterval);
+						timerInterval = undefined;
+					}
+				});
+			}, 1000);
+		}
+	}
+	
+	callbacks.push(timerChecker);
 	
 	socket.on('start', function() {
 		$location.path('/game/');
@@ -174,14 +194,6 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 			gameData.nomination(p.name);
 		}
 	}
-	
-	var timer = setInterval(function() {
-		if($scope.data.timer > 0) {
-			$rootScope.$apply(function() {
-				$scope.data.timer--;
-			});
-		}
-	}, 1000);
 	
 	// GAME TEXT GOES HERE
 	$scope.nomtext = "Choose someone to nominate for lynching if you wish"
