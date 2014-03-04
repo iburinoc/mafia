@@ -62,49 +62,60 @@ function initSocket(socket) { // init this when the person connects.
 	});
 
 	socket.on('personClickNight', function(data) {
-		if(!games[id].players[games[id].findPlayer(name)].picked) {
-			games[id].nightClick(name, data);
-		}
+		try{
+			if(games[id].pAlive(name) && !games[id].players[games[id].findPlayer(name)].picked) {
+				games[id].nightClick(name, data);
+			}
+		} catch(err) {console.log(err)};
 	});
 	
 	socket.on('nomination', function(data) {
-		if(games[id].phase === 'nomination' && games[id].day && !games[id].players[games[id].findPlayer(data)].nominated) {
-			games[id].nomination(name, data);
-		}
+		try{
+			if(games[id].pAlive(name) && games[id].phase === 'nomination' && games[id].day && !games[id].players[games[id].findPlayer(data)].nominated) {
+				games[id].nomination(name, data);
+			}
+		} catch(err) {console.log(err)};
 	});
 	
 	socket.on('newgame', function(data) {
-		id = newGame(data.name, socket);
-		name = data.name;
-		socket.emit('success', {});
-		leader = true;
+		try{
+			if(games[id]) {
+				return;
+			}
+			id = newGame(data.name, socket);
+			name = data.name;
+			socket.emit('success', {});
+			leader = true;
+		} catch(err) {console.log(err)};
 	});
 	
 	socket.on('connect', function(data) {
-		if(games[data.id] !== undefined) {
-			var player = games[data.id].players[games[data.id].findPlayer(data.name)];
-			if(player !== undefined) { // am i ever gonna fix this?
-				if(player.disconnected && data.name !== "God") {
-					player.disconnected = undefined;
-					socket.emit('gameData', games[data.id].getSendData(data.name));
-					leader = !!player.leader;
+		try{
+			if(games[data.id] !== undefined) {
+				var player = games[data.id].players[games[data.id].findPlayer(data.name)];
+				if(player !== undefined) { // am i ever gonna fix this?
+					if(player.disconnected && data.name !== "God") {
+						player.disconnected = undefined;
+						socket.emit('gameData', games[data.id].getSendData(data.name));
+						leader = !!player.leader;
+					} else {
+						socket.emit('nameexists', {});
+					}
 				} else {
-					socket.emit('nameexists', {});
+					if(games[data.id].setup) {
+						games[data.id].addPlayer(new Player(data.name, socket));
+						id = data.id;
+						name = data.name;
+						socket.emit('success', {});
+						leader = false;
+					} else {
+						socket.emit('inprogress', {});
+					}
 				}
 			} else {
-				if(games[data.id].setup) {
-					games[data.id].addPlayer(new Player(data.name, socket));
-					id = data.id;
-					name = data.name;
-					socket.emit('success', {});
-					leader = false;
-				} else {
-					socket.emit('inprogress', {});
-				}
+				socket.emit('notfound', {});
 			}
-		} else {
-			socket.emit('notfound', {});
-		}
+		} catch(err) {console.log(err)};
 	});
 	
 	socket.on('message', function(data) {
@@ -114,29 +125,31 @@ function initSocket(socket) { // init this when the person connects.
 	
 	function dc() { // dc, its a named function as it could be called from returning to menu or from disconnecting socket
 		// when all players have dc'ed, it is ready for garbage collection
-		if(games[id] !== undefined) {
-			if(games[id].setup) {
-				games[id].players.splice(games[id].findPlayer(name));
-				if(games[id].players.length === 0) {
-                    delete games[id];
-				} else {
-					if(leader) {
-						games[id].stop("Leader disconnected");
+		try{
+			if(games[id] !== undefined) {
+				if(games[id].setup) {
+					games[id].players.splice(games[id].findPlayer(name));
+					if(games[id].players.length === 0) {
+	                    delete games[id];
+					} else {
+						if(leader) {
+							games[id].stop("Leader disconnected");
+						}
+						games[id].update();
 					}
-					games[id].update();
+				} else {
+					games[id].players[games[id].findPlayer(name)].disconnected = true;
+					if(games[id].isdead()) {
+						deadGames.push(id);
+					}
 				}
 			} else {
-				games[id].players[games[id].findPlayer(name)].disconnected = true;
-				if(games[id].isdead()) {
-					deadGames.push(id);
-				}
+				console.log('wat dced from non-existant game');
 			}
-		} else {
-			console.log('wat dced from non-existant game');
-		}
-		name = '';
-		id = '';
-		leader = false;
+			name = '';
+			id = '';
+			leader = false;
+		} catch(err) {console.log(err)};
 	}
 	
 	socket.on('disconnect', dc);
@@ -361,6 +374,10 @@ function Game(leaderName, socket, id) { // Game constructor
 		}
 		return -1;
 	};
+	
+	this.pAlive = function(name) {
+		return game.findPlayer(name) >= 0;
+	}
 	
 	this.getSendData = function(name) { // get the data safe to send to a player
 		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles,
