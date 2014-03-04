@@ -13,7 +13,7 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 			}
 		}
 		for(var i = 0; i < data.dead.length; i++) {
-			if(p.name === data.dead[i].name) {
+			if(name === data.dead[i].name) {
 				return data.dead[i];
 			}
 		}
@@ -192,7 +192,7 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 	}
 	
 	$scope.pButtonDis = function(player) {
-		return $scope.data.day && player.nominated;
+		return $scope.data.day && player.nominated || $scope.data.you.picked;
 	}
 	
 	$scope.hasNomAction = function() {

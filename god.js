@@ -232,6 +232,9 @@ function Game(leaderName, socket, id) { // Game constructor
 			for(var p in game.players) {
 				game.players[p].socket.emit('message', message);
 			}
+			for(var p in game.dead) {
+				game.dead[p].socket.emit('message', message);
+			}
 		}
 	}
 
@@ -252,7 +255,15 @@ function Game(leaderName, socket, id) { // Game constructor
 		for(var i = 0; i < game.players.length; i++) {
 			game.players[i].socket.emit('gameData', this.getSendData(game.players[i].name));
 		}
+		game.updateDead();
 		console.log(game);
+	}
+	
+	this.updateDead = function() {
+		var data = game.getDeadSendData();
+		for(var i = 0; i < game.dead.length; i++) {
+			game.dead[i].socket.emit('gameData', data);
+		}
 	}
 	
 	this.updateRoles = function() { // for when the leader changes numbers
@@ -300,6 +311,7 @@ function Game(leaderName, socket, id) { // Game constructor
 			for(var u = 0; u < updatees.length; u++) {
 				updatees[u].socket.emit('gameData', game.getSendData(updatees[u].name));
 			}
+			game.updateDead();
 		}
 		game.checkDoneNight();
 	}
@@ -402,12 +414,27 @@ function Game(leaderName, socket, id) { // Game constructor
 		}
 		data.dead = [];
 		for(var i = 0; i < game.dead.length; i++) {
-			data.dead.push({name: game.dead[i].name, role: game.dead[i].role.name, alive: false});
+			data.dead.push({name: game.dead[i].name, role: game.dead[i].role, alive: false});
 		}
 		return data;
 	};
 	
-	// TODO: getDeadSendData
+	this.getDeadSendData = function() {
+		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles,
+			phase: game.phase, timer: game.timer, nominator: game.nominator, nominatee: game.nominatee,
+			players: game.players};
+		data.players = [];
+		data.dead = [];
+		for(var i = 0; i < game.players.length; i++) {
+			var p = game.players[i];
+			data.players.push({name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated,
+				role: p.role, selection: p.selection, picked: p.picked});
+		}
+		for(var i = 0; i < game.dead.length; i++) {
+			data.dead.push({name: game.dead[i].name, role: game.dead[i].role, alive: false});
+		}
+		return data;
+	};
 	
 	this.start = function() {
 		if(!game.validateRoles()) {
