@@ -10,12 +10,21 @@
 		</div>
 		<div id="secondOther" ng-show="data.phase === 'second' && data.nominator !== data.you.name">
 			<h3>{{ data.nominator }} has nominated {{ data.nominatee }}.  Second?</h3>
-			<button type="button" class="btn btn-primary">Second!</button>
+			<button type="button" class="btn btn-primary" ng-click="second();">Second!</button>
 			<h4>Nomination attempt over in {{ data.timer }}s.</h4>
 		</div>
 		<div id="secondYou" ng-show="data.phase === 'second' && data.nominator === data.you.name">
 			<h3>You have nominated {{ data.nominatee }}.</h3><br>
 			<h4>Nomination attempt over in {{ data.timer }}s.</h4>
+		</div>
+		<div id="voting" ng-show="data.phase === 'vote'">
+			<h3>Lynch {{ data.nominee }}?</h3><br>
+			<button type="button" class="btn btn-primary">Yes</button>
+			<button type="button" class="btn btn-primary">No</button>
+			<br>
+			<h3>Tally:</h3><br>
+			<h4 class="indent" ng-disabled="data.you.vote">Yes: {{ voteTally('y') }}</h4>
+			<h4 class="indent" ng-disabled="data.you.vote">No : {{ voteTally('n') }}</h4>
 		</div>
 		<div id="selections" ng-show="data.you.role.consensus && data.you.role.number > 1 && data.you.role.nightActivity">
 			<h3>Team Selections:</h3>

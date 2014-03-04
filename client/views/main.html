@@ -10,7 +10,7 @@
         
         <form id="join-game" name="joinGame"> 
             
-            <input type="text" name="gameID" ng-model="joinGame.gameID.id" ng-required="joinMouseOver" ng-minLength="8" ng-maxLength="8" ng-pattern="/^[0-9A-Fa-f]+$/" class="form-control menu-input" placeholder="Enter game code">
+            <input type="text" name="gameID" ng-model="joinGame.gameID.id" ng-required="joinMouseOver" ng-minLength="8" ng-maxLength="8" ng-pattern="/^[0-9A-Fa-f]+$/" class="form-control menu-input" placeholder="Enter game ID">
             
             <button id="join-game-btn" class="btn btn-default" ng-disabled="joinGame.gameID.$invalid || joinGame.gameID.$pristine || username.name.$invalid || username.name.$pristine" ng-click="joinGameFn();">Join Game</button>
         </form>

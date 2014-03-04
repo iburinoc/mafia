@@ -147,6 +147,9 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 		},
 		nomination: function(name) {
 			socket.emit('nomination', name);
+		},
+		second: function() {
+			socket.emit('second');
 		}
 	};
 }]);
@@ -218,6 +221,19 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 		if($scope.data.day && $scope.data.phase === 'nomination') {
 			gameData.nomination(p.name);
 		}
+	}
+	
+	$scope.second = function() {
+		if($scope.data.day && $scope.data.phase === 'second') {
+			console.log('Seconded');
+			gameData.second();
+		}
+	}
+	
+	$scope.voteTally = function(yn) {
+		return $scope.data.players.reduce(function(prevVal, curPlay){
+			return prevVal + (curPlay.vote === yn ? 1 : 0);
+		}, 0);
 	}
 	
 	$scope.messages = '';

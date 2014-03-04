@@ -77,6 +77,14 @@ function initSocket(socket) { // init this when the person connects.
 		} catch(err) {console.log(err)};
 	});
 	
+	socket.on('second', function() {
+		try{
+			if(games[id].phase === 'second') {
+				games[id].second(name);
+			}
+		} catch(err) {console.log(err);}
+	});
+	
 	socket.on('newgame', function(data) {
 		try{
 			if(games[id]) {
@@ -95,9 +103,11 @@ function initSocket(socket) { // init this when the person connects.
 				var player = games[data.id].players[games[data.id].findPlayer(data.name)];
 				if(player !== undefined) { // am i ever gonna fix this?
 					if(player.disconnected && data.name !== "God") {
-						player.disconnected = undefined;
+						delete player.disconnected;
 						socket.emit('gameData', games[data.id].getSendData(data.name));
 						leader = !!player.leader;
+						id = data.id;
+						name = data.name;
 					} else {
 						socket.emit('nameexists', {});
 					}
@@ -119,7 +129,12 @@ function initSocket(socket) { // init this when the person connects.
 	});
 	
 	socket.on('message', function(data) {
-		games[id].message('<' + name + '> ' + data);
+		try{
+			if(!games[id].pAlive(name)) {
+				return;
+			}
+			games[id].message('<' + name + '> ' + data);
+		} catch(err) {console.log(err);}
 	});
 	
 	
@@ -214,6 +229,10 @@ function Game(leaderName, socket, id) { // Game constructor
 	var nomtimer;
 	
 	function nomtimerCounter() {
+		if(game.phase !== 'second') {
+			clearInterval(nomtimer);
+			return;
+		}
 		if(game.timer > 0) {
 			game.timer--;
 			console.log('nomtimer' + game.id + ': ' + game.timer);
@@ -324,7 +343,14 @@ function Game(leaderName, socket, id) { // Game constructor
 		game.players[game.findPlayer(nominatee)].nominated = true;
 		nomtimer = setInterval(nomtimerCounter, 1000);
 		game.update();
-	}
+	};
+	
+	this.second = function(seconder) {
+		if(seconder === game.nominator) 
+			return;
+		game.phase = 'vote';
+		game.update();
+	};
 	
 	this.nomdone = function() {
 		delete game.nominator;
@@ -332,7 +358,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		game.phase = 'nomination';
 		clearInterval(nomtimer);
 		game.update();
-	}
+	};
 
 	this.checkDoneNight = function() {
 		for(var i = 0; i < game.players.length; i++) {
@@ -376,7 +402,7 @@ function Game(leaderName, socket, id) { // Game constructor
 			game.players[i].picked = false;
 		}
 		game.update();
-	}
+	};
 	
 	this.findPlayer = function(name) { // gets the index in the players array of a certain player
 		for(var i = 0; i < game.players.length; i++) {
@@ -389,7 +415,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	
 	this.pAlive = function(name) {
 		return game.findPlayer(name) >= 0;
-	}
+	};
 	
 	this.getSendData = function(name) { // get the data safe to send to a player
 		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles,
@@ -465,7 +491,7 @@ function Game(leaderName, socket, id) { // Game constructor
             game.players[i].socket.emit('stop', str);
         }
         game.players = [];
-    }
+    };
 	
 	this.validateRoles = function() {
 		var count = 0;
