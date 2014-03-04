@@ -84,7 +84,7 @@ function initSocket(socket) { // init this when the person connects.
 		if(games[data.id] !== undefined) {
 			var player = games[data.id].players[games[data.id].findPlayer(data.name)];
 			if(player !== undefined) { // am i ever gonna fix this?
-				if(player.disconnected) {
+				if(player.disconnected && data.name !== "God") {
 					player.disconnected = undefined;
 					socket.emit('gameData', games[data.id].getSendData(data.name));
 					leader = !!player.leader;
@@ -150,7 +150,7 @@ var roles = [{
 	nightActivity: false,
 	action: null,
 	number: 0,
-	consensus: true,
+	consensus: false,
 	order: -1,
 	nightActionS: function() {},
 	nightActionE: function() {}
@@ -230,7 +230,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.kill = function(p) {
 		game.dead.push(p);
 		p.alive = false;
-		game.players.splice(game.findPlayer(p.name));
+		game.players.splice(game.findPlayer(p.name), 1);
 	}
 
 	this.update = function() { // updates all clients
@@ -371,7 +371,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
 			pobj = {name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated};
-			if(game.players[index].role !== undefined && game.players[index].role === p.role && p.role.consensus) {
+			if(game.players[index].role !== undefined && game.players[index].role.name === p.role.name && p.role.consensus) {
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
 				pobj.role = p.role;
@@ -385,7 +385,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		}
 		data.dead = [];
 		for(var i = 0; i < game.dead.length; i++) {
-			data.dead.push({name: data.dead[i].name, role: data.dead[i].role.name, alive: false});
+			data.dead.push({name: game.dead[i].name, role: game.dead[i].role.name, alive: false});
 		}
 		return data;
 	};

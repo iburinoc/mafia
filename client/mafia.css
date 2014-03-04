@@ -71,15 +71,15 @@ button.person-button.ng-valid.ng-dirty {
 
 #messages {
 	resize: none;
-	width: 200px;
-	max-width: 200px;
+	width: 300px;
+	max-width: 300px;
 	overflow-x: wrap;
 }
 
 #writeMessage {
-	width: 200px;
-	max-width: 200px;
-	min-width: 200px;
+	width: 300px;
+	max-width: 300px;
+	min-width: 300px;
 	margin-top: 5px;
 }
 
