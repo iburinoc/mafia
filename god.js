@@ -85,13 +85,13 @@ function initSocket(socket) { // init this when the person connects.
 		} catch(err) {console.log(err);}
 	});
 	
-	socket.on('vote', function(data)) {
+	socket.on('vote', function(data) {
 		try{
 			if(games[id].phase === 'vote' && !games[id].players[games[id].findPlayer(name)].vote) {
-				games[id].vote(voter, data);
+				games[id].vote(name, data);
 			}
-		}
-	}
+		} catch(err) {console.log(err);}
+	});
 	
 	socket.on('newgame', function(data) {
 		try{
@@ -257,10 +257,14 @@ function Game(leaderName, socket, id) { // Game constructor
 			}
 		} else {
 			for(var p in game.players) {
-				game.players[p].socket.emit('message', message);
+				try{
+					game.players[p].socket.emit('message', message);
+				} catch(err) { console.log(err); };
 			}
 			for(var p in game.dead) {
-				game.dead[p].socket.emit('message', message);
+				try{
+					game.dead[p].socket.emit('message', message);
+				} catch(err) { console.log(err); };
 			}
 		}
 	}
@@ -360,32 +364,62 @@ function Game(leaderName, socket, id) { // Game constructor
 		game.update();
 	};
 	
+	var endDay = function() {
+		for(var i in game.players) {
+			delete game.players[i].nominated;
+		}
+		delete game.nominator;
+		delete game.nominatee;
+		game.day = false;
+		game.update();
+	};
+	
+	var lynch = function() {
+		game.kill(game.findPlayer(game.nominatee));
+		game.message('<God> ' + game.nominatee + ' has been lynched.');
+		endDay();
+	};
+	
+	var nolynch = function() {
+		delete game.nominator;
+		delete game.nominatee;
+		game.phase = 'nomination';
+		for(var i in game.players) {
+			delete game.players[i].vote;
+		}
+		game.message('<God> Lynch attempt failed, ' + nominatee + ' lives.');
+		game.update();
+	};
+	
+	this.nomdone = function() {
+		clearInterval(nomtimer);
+		delete game.nominator;
+		delete game.nominatee;
+		game.phase = 'nomination';
+		game.message('<God> Nomination attempt failed, ' + nominatee + ' lives.');
+		game.update();
+	};
+	
 	var voteTally = function(yn) {
 		return game.players.reduce(function(prevVal, curPlay){
 			return prevVal + (curPlay.vote === yn ? 1 : 0);
 		}, 0);
 	};
 	
-	var voteDone(v) {
+	var voteDone = function(v) {
 		return voteTally(v) > (game.players.length / 2.0);
-	}
+	};
 	
 	this.vote = function(voter, vote) {
 		game.players[game.findPlayer(voter)].vote = vote;
-		if(voteDone('y')) {
-			lynch();
-		} else if(voteDone('n')){
-			nolynch();
-		}
 		game.update();
-	};
-	
-	this.nomdone = function() {
-		delete game.nominator;
-		delete game.nominatee;
-		game.phase = 'nomination';
-		clearInterval(nomtimer);
-		game.update();
+		setTimeout(function() {
+			if(voteDone('y')) {
+				lynch();
+			} else if(voteDone('n')){
+				nolynch();
+			}
+		}, 750);
 	};
 
 	this.checkDoneNight = function() {
@@ -394,10 +428,10 @@ function Game(leaderName, socket, id) { // Game constructor
 				return;
 			}
 		}
-		setTimeout(game.endNight, 1000);
+		setTimeout(endNight, 750);
 	};
 
-	this.endNight = function() {
+	var endNight = function() {
 		console.log('night ended for ' + game.id);
 		ordRoles = {};
 		for(var i = 0; i < roles.length; i++) {
@@ -453,7 +487,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		data.players = [];
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
-			pobj = {name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated};
+			pobj = {name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated, vote: p.vote};
 			if(game.players[index].role !== undefined && game.players[index].role.name === p.role.name && p.role.consensus) {
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
@@ -482,7 +516,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
 			data.players.push({name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated,
-				role: p.role, selection: p.selection, picked: p.picked});
+				role: p.role, selection: p.selection, picked: p.picked, vote: p.vote});
 		}
 		for(var i = 0; i < game.dead.length; i++) {
 			data.dead.push({name: game.dead[i].name, role: game.dead[i].role, alive: false});
