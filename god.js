@@ -40,7 +40,7 @@ setInterval(cleanDead, 60000);
 //TODO: add input checking cuz theres probably a bunch of things a bad person could do here
 function initSocket(socket) { // init this when the person connects.
 	var id = "0";
-	var name; // TODO: add checking for the name
+	var name;
 	var leader;
 
 	socket.on('roles', function(data) {
@@ -189,7 +189,10 @@ var roles = [{
 	consensus: false,
 	order: -1,
 	nightActionS: function() {},
-	nightActionE: function() {}
+	nightActionE: function() {},
+	registerCB: function() {
+		
+	}
 },{
 	name: "Mafia",
 	nightActivity: true,
@@ -227,6 +230,8 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.players = [leader];
 	
 	this.dead = [];
+
+	this.callbacks = {lynch: [], death: []};
 	
 	this.setup = true;
 	
@@ -235,6 +240,12 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.roles = copyObj(roles); // change this at some point?  the only mutable part is the number for each
 	
 	var nomtimer;
+
+	for(r in roles) {
+		if(roles[r].registerCB) {
+			roles[r].registerCB(game);
+		}
+	}
 	
 	function nomtimerCounter() {
 		if(game.phase !== 'second') {
@@ -293,7 +304,9 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.updateDead = function() {
 		var data = game.getDeadSendData();
 		for(var i = 0; i < game.dead.length; i++) {
-			game.dead[i].socket.emit('gameData', data);
+			try{
+				game.dead[i].socket.emit('gameData', data);
+			} catch(err) { console.log(err); }
 		}
 	}
 	
@@ -367,27 +380,43 @@ function Game(leaderName, socket, id) { // Game constructor
 	var endDay = function() {
 		for(var i in game.players) {
 			delete game.players[i].nominated;
+			delete game.players[i].vote;
+			game.players[i].mark = {};
 		}
 		delete game.nominator;
 		delete game.nominatee;
+		game.phase = 'nomination';
 		game.day = false;
 		game.update();
 	};
 	
 	var lynch = function() {
-		game.kill(game.findPlayer(game.nominatee));
-		game.message('<God> ' + game.nominatee + ' has been lynched.');
-		endDay();
+		var index = game.findPlayer(game.nominatee);
+		game.players[index].mark.lynch = true;
+		for(var i in game.callbacks.lynch) {
+			game.callbacks[i](game);
+		}
+		if(game.players[index].mark.lynch) {
+			game.kill(game.players[game.findPlayer(game.nominatee)]);
+			game.message('<God> ' + game.nominatee + ' has been lynched.');
+			endDay();
+		} else {
+			delete game.nominator;
+			delete game.nominatee;
+			game.phase = 'nomination';
+			delete game.players[index].mark.lynch;
+			game.update();
+		}
 	};
 	
 	var nolynch = function() {
+		game.message('<God> Lynch attempt failed, ' + game.nominatee + ' lives.');
 		delete game.nominator;
 		delete game.nominatee;
 		game.phase = 'nomination';
 		for(var i in game.players) {
 			delete game.players[i].vote;
 		}
-		game.message('<God> Lynch attempt failed, ' + nominatee + ' lives.');
 		game.update();
 	};
 	
@@ -413,13 +442,11 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.vote = function(voter, vote) {
 		game.players[game.findPlayer(voter)].vote = vote;
 		game.update();
-		setTimeout(function() {
-			if(voteDone('y')) {
-				lynch();
-			} else if(voteDone('n')){
-				nolynch();
-			}
-		}, 750);
+		if(voteDone('y')) {
+			setTimeout(lynch, 750);
+		} else if(voteDone('n')){
+			setTimeout(nolynch, 750);
+		}
 	};
 
 	this.checkDoneNight = function() {
