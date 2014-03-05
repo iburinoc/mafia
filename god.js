@@ -116,11 +116,12 @@ function initSocket(socket) { // init this when the person connects.
 						leader = !!player.leader;
 						id = data.id;
 						name = data.name;
+						player.socket = socket;
 					} else {
 						socket.emit('nameexists', {});
 					}
 				} else {
-					if(games[data.id].setup) {
+					if(games[data.id].setup && data.name !== "God") {
 						games[data.id].addPlayer(new Player(data.name, socket));
 						id = data.id;
 						name = data.name;
@@ -190,8 +191,15 @@ var roles = [{
 	order: -1,
 	nightActionS: function() {},
 	nightActionE: function() {},
-	registerCB: function() {
-		
+	registerCB: function(game) {
+		game.callbacks.postdeath.push(function(g) {
+			for(var i in g.players) {
+				if(g.players[i].role.name === 'Mafia') {
+					return;
+				}
+			}
+			game.win('Civilians win!');
+		});
 	}
 },{
 	name: "Mafia",
@@ -209,6 +217,18 @@ var roles = [{
 			game.message('<God> ' + selection.name + ' was killed by the mafia.');
 			delete selection.mark.mafia;
 		}
+	},
+	registerCB: function(game) {
+		game.callbacks.postdeath.push(function(g) {
+			var count = 0;
+			for(var i in g.players) {
+				if(g.players[i].role.name === 'Mafia') {
+					count++;
+				}
+			}
+			if(count >= game.players.length / 2.0)
+				game.win('Mafia wins!');
+		});
 	}
 }];
 
@@ -231,7 +251,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	
 	this.dead = [];
 
-	this.callbacks = {lynch: [], death: []};
+	this.callbacks = {lynch: [], postdeath: []};
 	
 	this.setup = true;
 	
@@ -240,7 +260,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.roles = copyObj(roles); // change this at some point?  the only mutable part is the number for each
 	
 	var nomtimer;
-
+	
 	for(r in roles) {
 		if(roles[r].registerCB) {
 			roles[r].registerCB(game);
@@ -259,6 +279,13 @@ function Game(leaderName, socket, id) { // Game constructor
 			game.nomdone();
 		}
 	}
+	
+	this.win = function(winner) {
+		game.over = true;
+		game.winner = winner;
+		game.phase = 'done';
+		game.update();
+	};
 	
 	this.message = function(message, dest) {
 		if(dest) {
@@ -289,6 +316,9 @@ function Game(leaderName, socket, id) { // Game constructor
 		game.dead.push(p);
 		p.alive = false;
 		game.players.splice(game.findPlayer(p.name), 1);
+		for(var i in game.callbacks.postdeath) {
+			game.callbacks.postdeath[i](game);
+		}
 	}
 
 	this.update = function() { // updates all clients
@@ -367,12 +397,14 @@ function Game(leaderName, socket, id) { // Game constructor
 		game.phase = 'second';
 		game.players[game.findPlayer(nominatee)].nominated = true;
 		nomtimer = setInterval(nomtimerCounter, 1000);
+		game.message('<God> ' + nominator + ' has nominated ' + nominatee + '.');
 		game.update();
 	};
 	
 	this.second = function(seconder) {
 		if(seconder === game.nominator) 
 			return;
+		game.message('<God> ' + seconder + ' has seconded ' + game.nominatee + "'s nomination.");
 		game.phase = 'vote';
 		game.update();
 	};
@@ -436,7 +468,10 @@ function Game(leaderName, socket, id) { // Game constructor
 	};
 	
 	var voteDone = function(v) {
-		return voteTally(v) > (game.players.length / 2.0);
+		return voteTally(v) > (game.players.length / 2.0) ||
+			(v === 'n' && game.players.reduce(function(prev, cur){
+				return prev && cur.vote;
+			}));
 	};
 	
 	this.vote = function(voter, vote) {
@@ -508,14 +543,15 @@ function Game(leaderName, socket, id) { // Game constructor
 	
 	this.getSendData = function(name) { // get the data safe to send to a player
 		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles,
-			phase: game.phase, timer: game.timer, nominator: game.nominator, nominatee: game.nominatee};
+			phase: game.phase, timer: game.timer, nominator: game.nominator, nominatee: game.nominatee,
+			over: game.over, winner: game.winner};
 		var pobj = null;
 		var index = game.findPlayer(name);
 		data.players = [];
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
 			pobj = {name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated, vote: p.vote};
-			if(game.players[index].role !== undefined && game.players[index].role.name === p.role.name && p.role.consensus) {
+			if((game.players[index].role !== undefined && game.players[index].role.name === p.role.name && p.role.consensus) || game.over){
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
 				pobj.role = p.role;
@@ -537,7 +573,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	this.getDeadSendData = function() {
 		var data = {id: game.id, setup: game.setup, day: game.day, roles: game.roles,
 			phase: game.phase, timer: game.timer, nominator: game.nominator, nominatee: game.nominatee,
-			players: game.players};
+			over: game.over, winner: game.winner};
 		data.players = [];
 		data.dead = [];
 		for(var i = 0; i < game.players.length; i++) {
