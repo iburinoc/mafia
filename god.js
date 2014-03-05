@@ -85,6 +85,14 @@ function initSocket(socket) { // init this when the person connects.
 		} catch(err) {console.log(err);}
 	});
 	
+	socket.on('vote', function(data)) {
+		try{
+			if(games[id].phase === 'vote' && !games[id].players[games[id].findPlayer(name)].vote) {
+				games[id].vote(voter, data);
+			}
+		}
+	}
+	
 	socket.on('newgame', function(data) {
 		try{
 			if(games[id]) {
@@ -349,6 +357,26 @@ function Game(leaderName, socket, id) { // Game constructor
 		if(seconder === game.nominator) 
 			return;
 		game.phase = 'vote';
+		game.update();
+	};
+	
+	var voteTally = function(yn) {
+		return game.players.reduce(function(prevVal, curPlay){
+			return prevVal + (curPlay.vote === yn ? 1 : 0);
+		}, 0);
+	};
+	
+	var voteDone(v) {
+		return voteTally(v) > (game.players.length / 2.0);
+	}
+	
+	this.vote = function(voter, vote) {
+		game.players[game.findPlayer(voter)].vote = vote;
+		if(voteDone('y')) {
+			lynch();
+		} else if(voteDone('n')){
+			nolynch();
+		}
 		game.update();
 	};
 	

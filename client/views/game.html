@@ -19,12 +19,12 @@
 		</div>
 		<div id="voting" ng-show="data.phase === 'vote'">
 			<h3>Lynch {{ data.nominee }}?</h3><br>
-			<button type="button" class="btn btn-primary">Yes</button>
-			<button type="button" class="btn btn-primary">No</button>
+			<button type="button" class="btn btn-primary" ng-disabled="data.you.vote" ng-click="vote('y');">Yes</button>
+			<button type="button" class="btn btn-primary" ng-disabled="data.you.vote" ng-click="vote('n');">No</button>
 			<br>
-			<h3>Tally:</h3><br>
-			<h4 class="indent" ng-disabled="data.you.vote">Yes: {{ voteTally('y') }}</h4>
-			<h4 class="indent" ng-disabled="data.you.vote">No : {{ voteTally('n') }}</h4>
+			<h3>Tally:</h3>
+			<h4 class="indent">Yes: {{ voteTally('y') }}</h4>
+			<h4 class="indent">No : {{ voteTally('n') }}</h4>
 		</div>
 		<div id="selections" ng-show="data.you.role.consensus && data.you.role.number > 1 && data.you.role.nightActivity">
 			<h3>Team Selections:</h3>

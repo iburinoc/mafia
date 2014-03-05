@@ -150,6 +150,9 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 		},
 		second: function() {
 			socket.emit('second');
+		},
+		vote: function(v) {
+			socket.emit('vote', v);
 		}
 	};
 }]);
@@ -221,20 +224,24 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 		if($scope.data.day && $scope.data.phase === 'nomination') {
 			gameData.nomination(p.name);
 		}
-	}
+	};
 	
 	$scope.second = function() {
 		if($scope.data.day && $scope.data.phase === 'second') {
 			console.log('Seconded');
 			gameData.second();
 		}
-	}
+	};
+	
+	$scope.vote = function(v) {
+		gameData.vote(v);
+	};
 	
 	$scope.voteTally = function(yn) {
 		return $scope.data.players.reduce(function(prevVal, curPlay){
 			return prevVal + (curPlay.vote === yn ? 1 : 0);
 		}, 0);
-	}
+	};
 	
 	$scope.messages = '';
 	gameData.onMessage(function(data) {
@@ -247,7 +254,7 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 			gameData.message($scope.message);
 			$scope.message = '';
 		}
-	}
+	};
 	
 	// GAME TEXT GOES HERE
 	$scope.nomtext = "Choose someone to nominate for lynching if you wish"
