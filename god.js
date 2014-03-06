@@ -443,21 +443,23 @@ function Game(leaderName, socket, id) { // Game constructor
 	
 	var lynch = function() {
 		var index = game.findPlayer(game.nominatee);
-		game.players[index].mark.lynch = true;
-		for(var i in game.callbacks.lynch) {
-			game.callbacks[i](game);
-		}
-		if(game.players[index].mark.lynch) {
-			game.kill(game.players[game.findPlayer(game.nominatee)]);
-			game.message('<God> ' + game.nominatee + ' has been lynched.');
-			endDay();
-		} else {
-			delete game.nominator;
-			delete game.nominatee;
-			game.phase = 'nomination';
-			delete game.players[index].mark.lynch;
-			game.update();
-		}
+		try{
+			game.players[index].mark.lynch = true;
+			for(var i in game.callbacks.lynch) {
+				game.callbacks[i](game);
+			}
+			if(game.players[index].mark.lynch) {
+				game.kill(game.players[game.findPlayer(game.nominatee)]);
+				game.message('<God> ' + game.nominatee + ' has been lynched.');
+				endDay();
+			} else {
+				delete game.nominator;
+				delete game.nominatee;
+				game.phase = 'nomination';
+				delete game.players[index].mark.lynch;
+				game.update();
+			}
+		} catch(err) {console.log(err);}
 	};
 	
 	var checklynchdone = function() {
