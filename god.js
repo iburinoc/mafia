@@ -93,6 +93,14 @@ function initSocket(socket) { // init this when the person connects.
 		} catch(err) {console.log(err);}
 	});
 	
+	socket.on('nolynchvote', function() {
+		try{
+			if(games[id].pAlive(name) && games[id].day && games[id].phase === 'nomination') {
+				games[id].nolynchvote(name);
+			}
+		} catch(err) { console.log(err); }
+	});
+
 	socket.on('newgame', function(data) {
 		try{
 			if(games[id]) {
@@ -423,6 +431,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		for(var i in game.players) {
 			delete game.players[i].nominated;
 			delete game.players[i].vote;
+			delete game.players[i].nolynch;
 			game.players[i].mark = {};
 		}
 		delete game.nominator;
@@ -451,6 +460,14 @@ function Game(leaderName, socket, id) { // Game constructor
 		}
 	};
 	
+	var checklynchdone = function() {
+		if(game.players.reduce(function(prevValue, curPlay) {
+			return prevValue && curPlay.nominated;
+		}, true)) {
+			endDay();
+		}
+	};
+
 	var nolynch = function() {
 		game.message('<God> Lynch attempt failed, ' + game.nominatee + ' lives.');
 		delete game.nominator;
@@ -459,6 +476,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		for(var i in game.players) {
 			delete game.players[i].vote;
 		}
+		checklynchdone();
 		game.update();
 	};
 	
@@ -468,6 +486,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		delete game.nominatee;
 		game.phase = 'nomination';
 		game.message('<God> Nomination attempt failed, ' + nominatee + ' lives.');
+		checklynchdone();
 		game.update();
 	};
 	
@@ -493,6 +512,17 @@ function Game(leaderName, socket, id) { // Game constructor
 			setTimeout(lynch, 750);
 		} else if(voteDone('n')){
 			setTimeout(nolynch, 750);
+		}
+	};
+	
+	this.nolynchvote = function(voter) {
+		game.players[game.findPlayer(voter)].nolynch = true;
+		var tally = game.players.reduce(function(prevVal, curPlay) {
+			return prevVal + (curPlay.nolynch ? 1 : 0);
+		}, 0);
+		game.update();
+		if(tally > game.players.length / 2.0) {
+			endDay();
 		}
 	};
 
@@ -571,7 +601,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		data.players = [];
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
-			pobj = {name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated, vote: p.vote};
+			pobj = {name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated, vote: p.vote, nolynch: p.nolynch};
 			if((game.players[index].role !== undefined && game.players[index].role.name === p.role.name && p.role.consensus) || game.over){
 				pobj.selection = p.selection;
 				pobj.picked = p.picked;
@@ -600,7 +630,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		for(var i = 0; i < game.players.length; i++) {
 			var p = game.players[i];
 			data.players.push({name: p.name, alive: p.alive, leader: p.leader, nominated: p.nominated,
-				role: p.role, selection: p.selection, picked: p.picked, vote: p.vote});
+				role: p.role, selection: p.selection, picked: p.picked, vote: p.vote, nolynch: p.nolynch});
 		}
 		for(var i = 0; i < game.dead.length; i++) {
 			data.dead.push({name: game.dead[i].name, role: game.dead[i].role, alive: false});

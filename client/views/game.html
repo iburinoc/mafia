@@ -12,6 +12,10 @@
 					{{ o.name }}
 				</button>
 			</div>
+			<div ng-show="data.day && data.phase === 'nomination'">
+				<button class="btn" ng-disabled="data.you.nolynch" ng-click="nolynchvote();">No lynch</button>
+				<h4>No lynch votes: {{ nolynchvotecount() }}</h4>
+			</div>
 			<div id="secondOther" ng-show="data.phase === 'second' && data.nominator !== data.you.name">
 				<h3>{{ data.nominator }} has nominated {{ data.nominatee }}.  Second?</h3>
 				<button type="button" class="btn btn-primary" ng-click="second();">Second!</button>
@@ -67,4 +71,5 @@
 		<textarea id="messages" rows="10" readonly>{{ messages }}</textarea><br>
 		<input id="writeMessage" ng-show="data.you.alive" type="text" cols="50" ng-keydown="messageKeyD($event);" ng-model="message">
 	</div>
+	<button ng-show="data.over" ng-click="menu()">Return to menu</button>
 </div>

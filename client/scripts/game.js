@@ -153,6 +153,9 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 		},
 		vote: function(v) {
 			socket.emit('vote', v);
+		},
+		nolynchvote: function() {
+			socket.emit('nolynchvote');
 		}
 	};
 }]);
@@ -248,6 +251,16 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 			return prevVal + (curPlay.vote === yn ? 1 : 0);
 		}, 0);
 	};
+
+	$scope.nolynchvote = function() {
+		gameData.nolynchvote();
+	};
+
+	$scope.nolynchvotecount = function() {
+		return $scope.data.players.reduce(function(prevVal, curPlay) {
+			return prevVal + (curPlay.nolynch ? 1 : 0);
+		}, 0);
+	};
 	
 	$scope.messages = '';
 	gameData.onMessage(function(data) {
@@ -260,6 +273,10 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 			gameData.message($scope.message);
 			$scope.message = '';
 		}
+	};
+
+	$scope.menu = function() {
+		$location.path('/');
 	};
 	
 	// GAME TEXT GOES HERE
