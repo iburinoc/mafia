@@ -225,6 +225,12 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 			gameData.nomination(p.name);
 		}
 	};
+
+	$scope.specialClick = function(a) {
+		if(!$scope.data.day) {
+			gameData.personClickNight(a.name);
+		}
+	};
 	
 	$scope.second = function() {
 		if($scope.data.day && $scope.data.phase === 'second') {

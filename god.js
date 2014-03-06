@@ -229,7 +229,17 @@ var roles = [{
 			if(count >= game.players.length / 2.0)
 				game.win('Mafia wins!');
 		});
+	},
+	specialActions: [
+	{
+		name: "Bribe God",
+		action: function(game) {
+			for(var i in game.players) {
+				game.players[i].mark.bribe = true;
+			}
+		}
 	}
+	]
 }];
 
 function Player(name, socket) { // Player constructor
@@ -261,7 +271,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	
 	var nomtimer;
 	
-	for(r in roles) {
+	for(var r in roles) {
 		if(roles[r].registerCB) {
 			roles[r].registerCB(game);
 		}
@@ -508,7 +518,16 @@ function Game(leaderName, socket, id) { // Game constructor
 			var role = ordRoles[i];
 			for(var j = 0; j < game.players.length; j++) {
 				if(game.players[j].role.name === role.name) {
-					role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
+					var index = game.findPlayer(game.players[j].selection);
+					if(index != -1) {
+						role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
+					} else {
+						for(var sa in role.specialActions) {
+							if(game.players[j].selection === role.specialActions[sa].name) {
+								role.specialActions[sa].action(game);
+							}
+						}
+					}
 				}
 			}
 		}

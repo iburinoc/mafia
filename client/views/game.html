@@ -8,6 +8,9 @@
 				<button ng-repeat="o in data.players" type="button" ng-disabled="pButtonDis(o);" class="btn btn-primary person-button" ng-model="data.you.selection" ng-click="personClick(o)" btn-radio="o.name">
 					{{ o.name }}
 				</button>
+				<button type="button" ng-repeat="o in data.you.role.specialActions" class="btn person-button" ng-model="data.you.selection" ng-click="specialClick(o)" btn-radio="o.name" ng-show="!data.day">
+					{{ o.name }}
+				</button>
 			</div>
 			<div id="secondOther" ng-show="data.phase === 'second' && data.nominator !== data.you.name">
 				<h3>{{ data.nominator }} has nominated {{ data.nominatee }}.  Second?</h3>
