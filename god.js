@@ -468,10 +468,12 @@ function Game(leaderName, socket, id) { // Game constructor
 	};
 	
 	var voteDone = function(v) {
-		return voteTally(v) > (game.players.length / 2.0) ||
-			(v === 'n' && game.players.reduce(function(prev, cur){
-				return prev && cur.vote;
-			}));
+		if(voteTally(v) > (game.players.length / 2.0)) {
+			return true;
+		} else if(v === 'n'){
+			return game.players.reduce(function(prev, cur) { return prev && cur.vote; }, true) // check if all players have voted
+				&& voteTally('y') <= (game.players.length / 2.0);
+		}
 	};
 	
 	this.vote = function(voter, vote) {
