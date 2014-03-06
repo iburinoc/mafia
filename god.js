@@ -485,7 +485,7 @@ function Game(leaderName, socket, id) { // Game constructor
 		delete game.nominator;
 		delete game.nominatee;
 		game.phase = 'nomination';
-		game.message('<God> Nomination attempt failed, ' + nominatee + ' lives.');
+		game.message('<God> Nomination attempt failed, ' + game.nominatee + ' lives.');
 		checklynchdone();
 		game.update();
 	};
