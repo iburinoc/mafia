@@ -1,6 +1,12 @@
 mafia.controller('MainCtrl', ['$scope', '$location', '$modal', 'gameData', function ($scope, $location, $modal, gameData) {
 	var modalOpened;
 	gameData.disconnect();
+
+	gameData.socket.emit('games');
+	gameData.socket.on('games', function(data) {
+		$scope.games = data;
+	});
+
 	function failed(message) {
 		if(modalOpened) return;
 		

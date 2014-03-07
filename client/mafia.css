@@ -87,3 +87,8 @@ button.person-button.ng-valid.ng-dirty {
 	border-color: white;
 	outline-color: white;
 }
+
+#currentGames {
+	margin-top: 50px;
+}
+

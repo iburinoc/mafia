@@ -156,7 +156,8 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 		},
 		nolynchvote: function() {
 			socket.emit('nolynchvote');
-		}
+		},
+		socket: socket
 	};
 }]);
 

@@ -14,6 +14,11 @@
             
             <button id="join-game-btn" class="btn btn-default" ng-disabled="joinGame.gameID.$invalid || joinGame.gameID.$pristine || username.name.$invalid || username.name.$pristine" ng-click="joinGameFn();">Join Game</button>
         </form>
+		<div id="currentGames" ng-show="games">
+			<br><br>
+			<h3>Open Games:</h3>
+			<h4 ng-repeat="g in games" ng-show="g">{{ g.id }} - {{ g.leader }}</h4>
+		</div>
     </div>
 	<script type="text/ng-template" id="connectFailed.html">
 		<div class="modal-header">

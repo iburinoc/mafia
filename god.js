@@ -42,6 +42,16 @@ function initSocket(socket) { // init this when the person connects.
 	var id = "0";
 	var name;
 	var leader;
+	
+	socket.on('games', function() {
+		var gameIDs = [];
+		for(var g in games) {
+			if(games[g].setup) {
+				gameIDs.push({id: g, leader: games[g].players[0].name});
+			}
+		}
+		socket.emit('games', gameIDs);
+	});
 
 	socket.on('roles', function(data) {
 		try{
