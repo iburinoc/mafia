@@ -258,6 +258,21 @@ var roles = [{
 		}
 	}
 	]
+},
+{
+	name: "Doctor",
+	nightActivity: true,
+	action: "Choose someone to save",
+	number: 0,
+	consensus: true,
+	order: 2,
+	nightActionS: function(game, selection, selecter) {
+		if(selection.mark.mafia) {
+			game.message('<God> No death tonight');
+			delete selection.mark.mafia;
+		}
+	},
+	nightActionE: function(){}
 }];
 
 function Player(name, socket) { // Player constructor
@@ -494,10 +509,10 @@ function Game(leaderName, socket, id) { // Game constructor
 	
 	this.nomdone = function() {
 		clearInterval(nomtimer);
+		game.message('<God> Nomination attempt failed, ' + game.nominatee + ' lives.');
 		delete game.nominator;
 		delete game.nominatee;
 		game.phase = 'nomination';
-		game.message('<God> Nomination attempt failed, ' + game.nominatee + ' lives.');
 		checklynchdone();
 		game.update();
 	};
