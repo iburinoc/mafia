@@ -42,15 +42,19 @@ function initSocket(socket) { // init this when the person connects.
 	var id = "0";
 	var name;
 	var leader;
-	
-	socket.on('games', function() {
+
+	var getGameIDs = function() {
 		var gameIDs = [];
 		for(var g in games) {
 			if(games[g].setup) {
 				gameIDs.push({id: g, leader: games[g].players[0].name});
 			}
 		}
-		socket.emit('games', gameIDs);
+		return gameIDs
+	}
+	
+	socket.on('games', function() {	
+		socket.emit('games', getGameIDs());
 	});
 
 	socket.on('roles', function(data) {
@@ -120,6 +124,7 @@ function initSocket(socket) { // init this when the person connects.
 			name = data.name;
 			socket.emit('success', {});
 			leader = true;
+			socket.broadcast.emit('games', getGameIDs());
 		} catch(err) {console.log(err)};
 	});
 	
@@ -273,6 +278,19 @@ var roles = [{
 		}
 	},
 	nightActionE: function(){}
+},
+{
+	name: "Inspector",
+	nightActivity: true,
+	action: "Choose someone to inspect",
+	number: 0,
+	consensus: false,
+	order: 3,
+	nightActionS: function(game, selection, selecter) {
+		var alliance = selection.role.name === "Mafia" ? 'M' : 'C';
+		selecter.socket.emit('message', '<God> ' + selection.name + ': ' + alliance);
+	},
+	nightActionE: function(){}
 }];
 
 function Player(name, socket) { // Player constructor
@@ -422,7 +440,7 @@ function Game(leaderName, socket, id) { // Game constructor
 					}
 				}
 			} else {
-				updatees.append(game.players[num]);
+				updatees.push(game.players[num]);
 				game.players[num].picked = true;
 			}
 			for(var u = 0; u < updatees.length; u++) {

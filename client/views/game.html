@@ -71,5 +71,5 @@
 		<textarea id="messages" rows="10" readonly>{{ messages }}</textarea><br>
 		<input id="writeMessage" ng-show="data.you.alive" type="text" cols="50" ng-keydown="messageKeyD($event);" ng-model="message">
 	</div>
-	<button ng-show="data.over" ng-click="menu()">Return to menu</button>
+	<button ng-show="data.over" class="btn" ng-click="menu()">Return to menu</button>
 </div>
