@@ -230,7 +230,7 @@ var roles = [{
 	action: "Choose someone to kill",
 	number: 1,
 	consensus: true,
-	order: 1,
+	order: 2,
 	nightActionS: function(game, selection, selecter) {
 		selection.mark.mafia = true;
 	},
@@ -270,7 +270,7 @@ var roles = [{
 	action: "Choose someone to save",
 	number: 0,
 	consensus: true,
-	order: 2,
+	order: 3,
 	nightActionS: function(game, selection, selecter) {
 		if(selection.mark.mafia) {
 			game.message('<God> No death tonight');
@@ -285,10 +285,30 @@ var roles = [{
 	action: "Choose someone to inspect",
 	number: 0,
 	consensus: false,
-	order: 3,
+	order: 4,
 	nightActionS: function(game, selection, selecter) {
 		var alliance = selection.role.name === "Mafia" ? 'M' : 'C';
 		selecter.socket.emit('message', '<God> ' + selection.name + ': ' + alliance);
+	},
+	nightActionE: function(){}
+},
+{
+	name: "Prostitute",
+	nightActivity: true,
+	action: "Choose a client",
+	number: 0,
+	consensus: false,
+	order: 1,
+	nightActionS: function(game, selection, selecter) {
+		if(selection.role.consensus) {
+			for(var i = 0; i < game.players.length; i++) {
+				if(game.players[i].role.name === selection.role.name) {
+					game.players[i].mark.occupied = true;
+				}
+			}
+		} else {
+			selection.mark.occupied = true;
+		}
 	},
 	nightActionE: function(){}
 }];
@@ -594,12 +614,16 @@ function Game(leaderName, socket, id) { // Game constructor
 			for(var j = 0; j < game.players.length; j++) {
 				if(game.players[j].role.name === role.name) {
 					var index = game.findPlayer(game.players[j].selection);
-					if(index != -1) {
-						role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
+					if(game.players[j].mark.occupied) {
+						game.message('<God> You have been occupied', game.players[j].name);
 					} else {
-						for(var sa in role.specialActions) {
-							if(game.players[j].selection === role.specialActions[sa].name) {
-								role.specialActions[sa].action(game);
+						if(index != -1) {
+							role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
+						} else {
+							for(var sa in role.specialActions) {
+								if(game.players[j].selection === role.specialActions[sa].name) {
+									role.specialActions[sa].action(game);
+								}
 							}
 						}
 					}
