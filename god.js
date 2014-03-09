@@ -636,7 +636,9 @@ function Game(leaderName, socket, id) { // Game constructor
 				if(game.players[j].role.name === role.name) {
 					var index = game.findPlayer(game.players[j].selection);
 					if(game.players[j].mark.occupied) {
-						game.message('<God> You have been occupied', game.players[j].name);
+						if(game.players[j].role.name !== "Mafia") {
+							game.message('<God> You have been occupied', game.players[j].name);
+						}
 					} else {
 						if(index != -1) {
 							role.nightActionS(game, game.players[game.findPlayer(game.players[j].selection)], game.players[j]);
