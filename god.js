@@ -296,6 +296,27 @@ var roles = [{
 	nightActionE: function(){}
 },
 {
+	name: "Lawyer",
+	nightActivity: true,
+	action: "Choose someone to attorney for",
+	number: 0,
+	consensus: true,
+	order: 5,
+	nightActionS: function(game, selection, selecter) {
+		selection.mark.lawyer = true;
+	},
+	nightActionE: function(){},
+	registerCB: function(game) {
+		game.callbacks.lynch.push(function(game) {
+			var index = game.findPlayer(game.nominatee);
+			if(game.players[index].mark.lawyer) {
+				game.message('<God> ' + game.nominatee + ' has a great lawyer!');
+				delete game.players[index].mark.lynch;
+			}
+		});
+	}
+},
+{
 	name: "Prostitute",
 	nightActivity: true,
 	action: "Choose a client",
