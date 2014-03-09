@@ -311,6 +311,24 @@ var roles = [{
 		}
 	},
 	nightActionE: function(){}
+},
+{
+	name: "Fool",
+	nightActivit: false,
+	action: "",
+	number: 0,
+	consensus: false,
+	order: -1,
+	nightActionS: function(){},
+	nightActionE: function(){},
+	registerCB: function(game) {
+		game.callbacks.postlynch.push(function(game) {
+			console.log(game.players[game.findPlayer(game.nominatee)].role.name);
+			if(game.players[game.findPlayer(game.nominatee)].role.name === "Fool") {
+				game.win(game.nominatee + ' wins!');
+			}
+		});
+	}
 }];
 
 function Player(name, socket) { // Player constructor
@@ -332,7 +350,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	
 	this.dead = [];
 
-	this.callbacks = {lynch: [], postdeath: []};
+	this.callbacks = {lynch: [], postlynch: [], postdeath: []};
 	
 	this.setup = true;
 	
@@ -509,9 +527,12 @@ function Game(leaderName, socket, id) { // Game constructor
 		try{
 			game.players[index].mark.lynch = true;
 			for(var i in game.callbacks.lynch) {
-				game.callbacks[i](game);
+				game.callbacks.lynch[i](game);
 			}
 			if(game.players[index].mark.lynch) {
+				for(var i in game.callbacks.postlynch) {
+					game.callbacks.postlynch[i](game);
+				}
 				game.kill(game.players[game.findPlayer(game.nominatee)]);
 				game.message('<God> ' + game.nominatee + ' has been lynched.');
 				endDay();
