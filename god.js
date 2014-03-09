@@ -287,8 +287,11 @@ var roles = [{
 	consensus: false,
 	order: 4,
 	nightActionS: function(game, selection, selecter) {
-		var alliance = selection.role.name === "Mafia" ? 'M' : 'C';
-		selecter.socket.emit('message', '<God> ' + selection.name + ': ' + alliance);
+		var alliance = selection.role.name === "Mafia";
+		alliance = alliance ^ selecter.crazy;
+		alliance = alliance ^ selecter.mark.bribe;
+		var val = alliance ? 'M' : 'C';
+		selecter.socket.emit('message', '<God> ' + selection.name + ': ' + val);
 	},
 	nightActionE: function(){}
 },
