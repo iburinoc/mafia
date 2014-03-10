@@ -293,7 +293,12 @@ var roles = [{
 		var val = alliance ? 'M' : 'C';
 		selecter.socket.emit('message', '<God> ' + selection.name + ': ' + val);
 	},
-	nightActionE: function(){}
+	nightActionE: function(){},
+	playerAdded: function(game, num, player) {
+		if(num === 1) { // crazy inspector
+			player.crazy = true;
+		}
+	}
 },
 {
 	name: "Lawyer",
@@ -764,8 +769,11 @@ function Game(leaderName, socket, id) { // Game constructor
 				var k;
 				do {
 					k = Math.floor(Math.random() * game.players.length);
-				} while(game.players[k].role != undefined);
+				} while(game.players[k].role !== undefined);
 				game.players[k].role = game.roles[i];
+				if(roles[i].playerAdded) {
+					roles[i].playerAdded(game, j, game.players[k]);
+				}
 			}
 		}
 		game.setup = false;
