@@ -17,4 +17,15 @@
 			<li ng-repeat="player in data.players">{{ player.name }}</li>
 		</ul>
 	</div>
+	<script type="text/ng-template" id="gameStop.html">
+		<div class="modal-header">
+            <h3>The game stopped :(</h3>
+        </div>
+        <div class="modal-body">
+            {{ modalMessage }}
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-warning" ng-click="closeModal()">Close</button>
+        </div>	
+	</script>
 </div>

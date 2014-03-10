@@ -161,7 +161,7 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 	};
 }]);
 
-mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gameData', function($scope, $rootScope, $location, $http, gameData) {
+mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', '$modal', 'gameData', function($scope, $rootScope, $location, $http, $modal, gameData) {
 	
     $scope.data = gameData.getData();
 	if($scope.data == null) {
@@ -280,6 +280,30 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', 'gam
 		$location.path('/');
 	};
 	
+	var modalOpened;
+
+	var stop = function(message) {
+		if(modalOpened) return;
+		modalOpened = true;
+		$scope.modalMessage = message;
+		var modalInstance = $modal.open({
+			templateUrl: 'gameStop.html',
+			scope: $scope
+		});
+
+		$scope.closeModal = function() {
+			modalInstance.dismiss('cancel');
+		};
+
+		function closed() {
+			modalOpened = false;
+			$location.path('/');
+		}
+		modalInstance.result.then(closed, closed);
+	};
+
+	gameData.socket.on('stop', stop);
+
 	// GAME TEXT GOES HERE
 	$scope.nomtext = "Choose someone to nominate for lynching if you wish"
 }]);

@@ -50,7 +50,7 @@ function initSocket(socket) { // init this when the person connects.
 				gameIDs.push({id: g, leader: games[g].players[0].name});
 			}
 		}
-		return gameIDs
+		return gameIDs;
 	}
 	
 	socket.on('games', function() {	
@@ -182,7 +182,6 @@ function initSocket(socket) { // init this when the person connects.
 						if(leader) {
 							games[id].stop("Leader disconnected");
 						}
-						games[id].update();
 					}
 				} else {
 					games[id].players[games[id].findPlayer(name)].disconnected = true;
@@ -790,7 +789,7 @@ function Game(leaderName, socket, id) { // Game constructor
         for(var i = 0; i < game.players.length; i++) {
             game.players[i].socket.emit('stop', str);
         }
-        game.players = [];
+        delete games[game.id];
     };
 	
 	this.validateRoles = function() {
