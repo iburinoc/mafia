@@ -282,8 +282,10 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', '$mo
 	
 	var modalOpened;
 
-	var stop = function(message) {
+	var stopFn = function(message) {
+		console.log('stop: ' + message);
 		if(modalOpened) return;
+		$location.path('/');
 		modalOpened = true;
 		$scope.modalMessage = message;
 		var modalInstance = $modal.open({
@@ -297,12 +299,11 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', '$mo
 
 		function closed() {
 			modalOpened = false;
-			$location.path('/');
 		}
 		modalInstance.result.then(closed, closed);
 	};
 
-	gameData.socket.on('stop', stop);
+	gameData.socket.on('stop', stopFn);
 
 	// GAME TEXT GOES HERE
 	$scope.nomtext = "Choose someone to nominate for lynching if you wish"

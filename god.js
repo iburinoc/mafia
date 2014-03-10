@@ -13,11 +13,11 @@ function cleanDead() { // checks for dead games every minute
 		var id = deadGames[i]
 		try {
 			if(!(games[id].isdead())) {
-				deadGames.splice(i);
+				deadGames.splice(i, 1);
 			} else {
 				if(games[id].deadChecked) {
 					delete games[deadGames[i]];
-					deadGames.splice(i);
+					deadGames.splice(i, 1);
 				} else {
 					games[id].deadChecked = true;
 				}
@@ -175,12 +175,16 @@ function initSocket(socket) { // init this when the person connects.
 		try{
 			if(games[id] !== undefined) {
 				if(games[id].setup) {
-					games[id].players.splice(games[id].findPlayer(name));
+					games[id].players.splice(games[id].findPlayer(name), 1);
 					if(games[id].players.length === 0) {
 	                    delete games[id];
+						socket.broadcast.emit('games', getGameIDs());
 					} else {
+						console.log(leader);
 						if(leader) {
+							console.log('Leader disconnected\n\n\n');
 							games[id].stop("Leader disconnected");
+							socket.broadcast.emit('games', getGameIDs());
 						}
 					}
 				} else {
@@ -787,7 +791,9 @@ function Game(leaderName, socket, id) { // Game constructor
     
     this.stop = function(str) {
         for(var i = 0; i < game.players.length; i++) {
-            game.players[i].socket.emit('stop', str);
+			try{
+				game.players[i].socket.emit('stop', str);
+			} catch(err) { console.log(err); }
         }
         delete games[game.id];
     };
