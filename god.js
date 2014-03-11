@@ -43,6 +43,10 @@ function initSocket(socket) { // init this when the person connects.
 	var name;
 	var leader;
 
+	var checkname = function(name) {
+		return !!(name.match(/^[a-zA-Z0-0_]{1,20}$/));
+	}
+
 	var getGameIDs = function() {
 		var gameIDs = [];
 		for(var g in games) {
@@ -120,6 +124,7 @@ function initSocket(socket) { // init this when the person connects.
 			if(games[id]) {
 				return;
 			}
+			if(!checkname(data.name)) return;
 			id = newGame(data.name, socket);
 			name = data.name;
 			socket.emit('success', {});
@@ -130,6 +135,7 @@ function initSocket(socket) { // init this when the person connects.
 	
 	socket.on('connect', function(data) {
 		try{
+			if(!checkname(data.name)) return;
 			if(games[data.id] !== undefined) {
 				var player = games[data.id].players[games[data.id].findPlayer(data.name)];
 				if(player !== undefined) { // am i ever gonna fix this?

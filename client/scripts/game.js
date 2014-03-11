@@ -72,10 +72,6 @@ mafia.factory('gameData', ['$rootScope', '$http', '$location', 'socket', functio
 		$location.path('/game/');
 	});
 	
-	socket.on('stop', function(data) {
-		$location.path('/');
-	});
-
 	return {
 		connect: function(username, id, success, error) {
 			name = username;
@@ -285,7 +281,6 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', '$mo
 	var stopFn = function(message) {
 		console.log('stop: ' + message);
 		if(modalOpened) return;
-		$location.path('/');
 		modalOpened = true;
 		$scope.modalMessage = message;
 		var modalInstance = $modal.open({
@@ -299,6 +294,7 @@ mafia.controller('GameCtrl', ['$scope', '$rootScope', '$location', '$http', '$mo
 
 		function closed() {
 			modalOpened = false;
+			$location.path('/');
 		}
 		modalInstance.result.then(closed, closed);
 	};
