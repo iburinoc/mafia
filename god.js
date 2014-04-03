@@ -44,7 +44,7 @@ function initSocket(socket) { // init this when the person connects.
 	var leader;
 
 	var checkname = function(name) {
-		return !!(name.match(/^[a-zA-Z0-0_]{1,20}$/));
+		return !!(name.match(/^[a-zA-Z0-9_]{1,20}$/));
 	}
 
 	var getGameIDs = function() {
@@ -352,7 +352,7 @@ var roles = [{
 },
 {
 	name: "Fool",
-	nightActivit: false,
+	nightActivity: false,
 	action: "",
 	number: 0,
 	consensus: false,
@@ -578,6 +578,9 @@ function Game(leaderName, socket, id) { // Game constructor
 				delete game.nominator;
 				delete game.nominatee;
 				game.phase = 'nomination';
+				for(var i in game.players) {
+					delete game.players[i].vote;
+				}
 				delete game.players[index].mark.lynch;
 				game.update();
 			}
