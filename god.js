@@ -418,6 +418,7 @@ function Game(leaderName, socket, id) { // Game constructor
 	}
 	
 	this.win = function(winner) {
+		if(game.over) return; // the game was already terminated
 		game.over = true;
 		game.winner = winner;
 		game.phase = 'done';
