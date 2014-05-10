@@ -282,7 +282,6 @@ var roles = [{
 	order: 3,
 	nightActionS: function(game, selection, selecter) {
 		if(selection.mark.mafia) {
-			game.message('<God> No death tonight');
 			delete selection.mark.mafia;
 		}
 	},
